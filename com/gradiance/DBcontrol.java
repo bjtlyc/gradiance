@@ -57,12 +57,12 @@ public class DBcontrol {
     static void query(String q){
         try{
             rs = stmt.executeQuery(q);
-            while(rs.next())
+            /*while(rs.next())
             {
                 String s = rs.getString("COF_NAME");
                 float n = rs.getFloat("PRICE");
                 System.out.println(s + " " + n);
-            }
+            }*/
         }catch(Throwable oops){
             oops.printStackTrace();
         }
