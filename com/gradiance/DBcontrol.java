@@ -57,20 +57,16 @@ public class DBcontrol {
     static void query(String q){
         try{
             rs = stmt.executeQuery(q);
-            /*while(rs.next())
-            {
-                String s = rs.getString("COF_NAME");
-                float n = rs.getFloat("PRICE");
-                System.out.println(s + " " + n);
-            }*/
         }catch(Throwable oops){
             oops.printStackTrace();
         }
     }
 
-    static void close(Connection conn) {
-        if(conn != null) {
-            try { conn.close(); } catch(Throwable whatever) {}
+    static void update(String q){
+        try{
+            stmt.executeUpdate(q);
+        }catch(Throwable oops){
+            oops.printStackTrace();
         }
     }
 
