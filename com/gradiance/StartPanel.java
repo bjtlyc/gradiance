@@ -4,13 +4,13 @@ import java.math.*;
 import java.util.*;
 import java.io.*;
 
-
 public class StartPanel
 {
     
     StartPanel() throws IOException{
         DBcontrol db = new DBcontrol();
-        User.init();
+        init();
+        //User.init();
         while(true)
         {
             System.out.println("Please input a number to make a choice"+
@@ -47,18 +47,19 @@ public class StartPanel
         char [] password  = c.readPassword("Enter your password: ");
         if(verify(user_id, password))
         {
-            System.out.println("welcome back " + user_id + " :");
             //User user = UserFactory.createUser("default");
             User user=null;
             try{
-                    String name = DBcontrol.rs.getString("sname");
-                    String role = DBcontrol.rs.getString("role");
+                    String name = DBcontrol.rs.getString("uname");
                     String major = DBcontrol.rs.getString("major");
-                    user = new User(Long.parseLong(user_id),name,major,role);
+                    //user = new User(Long.parseLong(user_id),name,major,role);
+                    user = new Student(user_id,name,major);
                 }catch(Throwable oops){
                     oops.printStackTrace();
                 }
-            user.doSomething();
+            System.out.println("welcome back " + user.name + " :");
+            while(user.doSomething())
+                continue;
         }
         else
             System.out.println("the userid/passwrod is not valid, please try again");
@@ -72,22 +73,23 @@ public class StartPanel
             System.err.println("no console");
             System.exit(0);
         }
-        String username = c.readLine("Enter your user name: ");
+        String userid = c.readLine("Please enter your login id"); 
+        String username = c.readLine("Enter your full name: ");
         char [] password  = c.readPassword("Enter your password: ");
         String pwd = new String(password);
         String major = c.readLine("Enter your major: ");
         String role = c.readLine("Enter your role: ");
-        long sid = ++User.maxid; 
-        String q = "insert into student values ("+sid+",'"+username+"','"+pwd+"','"+major+"','"+role+"')"   ;
+        String q = "insert into user values ("+userid+",'"+username+"','"+pwd+"','"+major+"')";
         DBcontrol.update(q);
-        User user = new User(sid,username,major,role);
+        User user = new Student(userid,username,major);
         System.out.println("Create User Successfully, welcome "+username);
-        user.doSomething();
+        while(user.doSomething())
+            continue;
     }
 
     boolean verify(String user_id, char [] password)
     {
-        String s = "SELECT * FROM student where sid = " + user_id;
+        String s = "SELECT * FROM users where userid = '" + user_id+"'";
         DBcontrol.query(s);
         try{
             if(DBcontrol.rs.next())
@@ -111,4 +113,40 @@ public class StartPanel
         //String s = "SELECT COF_NAME, PRICE FROM COFFEES";
         //DBcontrol.query(s);
     }
+    void init()
+    {
+        DBcontrol.update("drop table enroll");
+        DBcontrol.update("drop table users");
+        DBcontrol.update("drop table course");
+
+        DBcontrol.update("create table course ( cid varchar2(20),token varchar2(20),cname varchar2(40), cstart date, cend date, prof varchar2(25), ta varchar2(25), constraint CourseKey primary key (token))");
+        DBcontrol.update("create table users ( userid varchar2(20), uname varchar2(25), password varchar2(20), major varchar2(20), constraint userKey primary key (userid)  )");
+        DBcontrol.update("create table enroll ( userid varchar2(20), token varchar2(20), role varchar2(20), primary key (userid,token), constraint fk_mid foreign key (userid) references users on delete cascade, constraint fk_token foreign key (token) references course on delete cascade) ");
+
+        /*course*/
+        DBcontrol.update("insert into course(cid,token,cname,cstart,cend,prof,ta) values ('CSC440', 'CSC440SPR13', 'Database Systems', '01-JAN-13', '10-MAY-13', 'Kemafor Ogan', 'Aishwarya Neelakantan')");
+        DBcontrol.update("insert into course(cid,token,cname,cstart,cend,prof,ta) values ('CSC541', 'CSC541FLL11', 'Advanced Data Structures', '01-AUG-11', '15-DEC-11', 'Rada Chirkova', 'Jitendra Harlalka')");
+        DBcontrol.update("insert into course(cid,token,cname,cstart,cend,prof,ta) values ('CSC501', 'CSC501SPR12', 'Operating Systems', '01-JAN-12', '10-MAY-12', 'Dr. R. Mueller', 'Pamela Hart')");
+
+        /*user*/
+        DBcontrol.update("insert into users(userid, uname, password) values ('ssbudha', 'Sam S. Budha', '123bud')");
+        DBcontrol.update("insert into users(userid, uname, password) values ('sskanit', 'Sara S. Kanit', '123kan')");
+        DBcontrol.update("insert into users(userid, uname, password) values ('agholak', 'Alan G. Holak', '123hol')");
+        DBcontrol.update("insert into users(userid, uname, password) values ('rjoseph', 'Rose Joseph', '123jos')");
+        DBcontrol.update("insert into users(userid, uname, password) values ('tbirajd', 'Ted Birajd', '123bir')");
+        DBcontrol.update("insert into users(userid, uname, password) values ('kogan', 'Kemafor Ogan', '123kogan')");
+        DBcontrol.update("insert into users(userid, uname, password) values ('aneelak', 'Aishwarya Neelakantan', '123nee')");
+
+        /*enroll*/
+        DBcontrol.update("insert into enroll(userid, token, role) values ('ssbudha', 'CSC440SPR13', 'stud')");
+        DBcontrol.update("insert into enroll(userid, token, role) values ('sskanit', 'CSC440SPR13', 'stud')");
+        DBcontrol.update("insert into enroll(userid, token, role) values ('agholak', 'CSC440SPR13', 'stud')");
+        DBcontrol.update("insert into enroll(userid, token, role) values ('rjoseph', 'CSC440SPR13', 'stud')");
+        DBcontrol.update("insert into enroll(userid, token, role) values ('aneelak', 'CSC440SPR13', 'ta')");
+        DBcontrol.update("insert into enroll(userid, token, role) values ('kogan', 'CSC440SPR13', 'faculty')");
+
+        DBcontrol.update("insert into enroll(userid, token, role) values ('kogan', 'CSC501SPR13', 'stud')");
+
+    }
+    
 }
