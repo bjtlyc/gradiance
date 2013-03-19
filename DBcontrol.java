@@ -8,7 +8,6 @@
 //Note: If you run the program more than once, it will not be able to create the COFFEES table anew after the first run; 
 //	you can remove the COFFEES tables between the runs by typing "drop table COFFEES;" in SQL*Plus.
 
-package com.gradiance;
 import java.sql.*;
 
 public class DBcontrol {
@@ -17,8 +16,8 @@ public class DBcontrol {
 	//= "jdbc:oracle:thin:@//orca.csc.ncsu.edu:1521/ORCL.WORLD";
 	= "jdbc:oracle:thin:@ora.csc.ncsu.edu:1521:ORCL";
     static Connection conn = null;
-    public static Statement stmt = null;
-    public static ResultSet rs = null;
+    static Statement stmt = null;
+    static ResultSet rs = null;
 
     DBcontrol(){
     
@@ -32,40 +31,11 @@ public class DBcontrol {
 
 	    String user = "yliu63";	// For example, "jsmith"
 	    String passwd = "001083962";	// Your 9 digit student ID number
-
-
-
-
-		// Get a connection from the first driver in the
-		// DriverManager list that recognizes the URL jdbcURL
-                
 		//conn = DriverManager.getConnection(jdbcURL, user, passwd);
-                
 		conn = DriverManager.getConnection(jdbcURL, user, passwd);
-
-		// Create a statement object that will be sending your
-		// SQL statements to the DBMS
-
 		stmt = conn.createStatement();
-       
            
         } catch(Throwable oops) {
-            oops.printStackTrace();
-        }
-    }
-
-    static void query(String q){
-        try{
-            rs = stmt.executeQuery(q);
-        }catch(Throwable oops){
-            oops.printStackTrace();
-        }
-    }
-
-    static void update(String q){
-        try{
-            stmt.executeUpdate(q);
-        }catch(Throwable oops){
             oops.printStackTrace();
         }
     }
@@ -80,6 +50,20 @@ public class DBcontrol {
         if(rs != null) {
             try { rs.close(); } catch(Throwable whatever) {}
         }
+    }
+
+    public static void main(String argv[])
+    {
+        DBcontrol db = new DBcontrol();
+        try{
+            db.rs = stmt.executeQuery("select * from coffees where price > all (select price from coffees)");
+            if(db.rs.next())
+                System.out.println(db.rs.getString("sup_id"));
+
+            }catch(Throwable oops)
+            {
+                System.err.println("err query sup_id");
+            }
     }
 }
 

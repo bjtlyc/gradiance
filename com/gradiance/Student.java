@@ -4,20 +4,16 @@ import java.io.*;
 class Student extends User{
 
     Student(){}
-    Student(String userid, String name, String major)
+    Student(String userid, String name, int role)
     {
-        super(userid,name,major);
+        super(userid,name,role);
     }
     
     boolean addCourse()
     {
-        Console c = System.console();
-        if(c==null)
-        {
-            System.err.println("no console");
+        if(Util.c==null)
             System.exit(0);
-        }
-        String course_token = c.readLine("Please enter a course token");
+        String course_token = Util.c.readLine("Please enter a course token");
         String q = "select * from course where token='"+course_token+"'";
         DBcontrol.query(q);
         try{
@@ -29,9 +25,9 @@ class Student extends User{
                 Course course = new Course(cid,cname,token,userid);
                 String u = "insert into enroll values ('"+userid+"','"+course_token+"','stud')";
                 DBcontrol.update(u);
+                System.out.println("Enroll successfully");
                 while(aboutCourse(course))
                     continue;
-
             }
             else
             {
@@ -73,15 +69,46 @@ class Student extends User{
 
     boolean viewScore(Course course)
     {
-        course.showScore();
+        if(course.showHomework(0))
+        {
+            InputStreamReader cin = InputStreamReader(System.in);
+            int choice = cin.read();
+            Homework temp = hwlist.get(choice);
+            if(temp!=null)
+                System.out.println(hwlist.get(choice).score);
+            else
+            {
+                System.out.println("Invalid Choice, please enter another number");
+                return true;
+            }
+        }
+        else
+            System.out.println("You don't have homework attemp");
+        return false;
     }
-    boolean viewPastSubmit()
+
+    boolean viewPastSubmit(Course course)
     {
-        course.showPastSubmit();
+        return false;
     }
-    boolean attemptHomework();
+    boolean attemptHomework(Course course)
     {
-        course.showAttempHomework();
+        if(course.showOpenHomework())
+        {
+            InputStreamReader cin = InputStreamReader(System.in);
+            int choice = cin.read();
+            Homework temp = hwlist.get(choice);
+            if(temp!=null)
+                temp.doHomework();
+            else
+            {
+                System.out.println("Invalid Choice, please enter another number");
+                return true;
+            }
+        }
+        else
+            System.out.println("You don't have homework attemp");
+        return false;
     }
 }
 

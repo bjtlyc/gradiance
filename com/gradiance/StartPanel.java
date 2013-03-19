@@ -9,7 +9,7 @@ public class StartPanel
     
     StartPanel() throws IOException{
         DBcontrol db = new DBcontrol();
-        init();
+        //init();
         //User.init();
         while(true)
         {
@@ -26,9 +26,13 @@ public class StartPanel
                     CreateUser();
                     break;
                 case '3':
+                    DBcontrol.close(DBcontrol.stmt);
+                    DBcontrol.close(DBcontrol.rs);
                     System.exit(0);
                     break;
                 default:
+                    DBcontrol.close(DBcontrol.stmt);
+                    DBcontrol.close(DBcontrol.rs);
                     System.err.println("invalid input");
                     break;
             }
@@ -51,9 +55,9 @@ public class StartPanel
             User user=null;
             try{
                     String name = DBcontrol.rs.getString("uname");
-                    String major = DBcontrol.rs.getString("major");
+                    int role = DBcontrol.rs.getInt("faculty");
                     //user = new User(Long.parseLong(user_id),name,major,role);
-                    user = new Student(user_id,name,major);
+                    user = UserFactory.createUser(user_id,name,role);
                 }catch(Throwable oops){
                     oops.printStackTrace();
                 }
@@ -78,10 +82,10 @@ public class StartPanel
         char [] password  = c.readPassword("Enter your password: ");
         String pwd = new String(password);
         String major = c.readLine("Enter your major: ");
-        String role = c.readLine("Enter your role: ");
-        String q = "insert into user values ("+userid+",'"+username+"','"+pwd+"','"+major+"')";
+        //String role = c.readLine("Enter your role: ");
+        String q = "insert into member values ('"+userid+"','"+username+"','"+pwd+"',0";//'"+major+"')";
         DBcontrol.update(q);
-        User user = new Student(userid,username,major);
+        User user = new Student(userid,username,0);
         System.out.println("Create User Successfully, welcome "+username);
         while(user.doSomething())
             continue;
@@ -89,7 +93,7 @@ public class StartPanel
 
     boolean verify(String user_id, char [] password)
     {
-        String s = "SELECT * FROM users where userid = '" + user_id+"'";
+        String s = "SELECT * FROM member where mid = '" + user_id+"'";
         DBcontrol.query(s);
         try{
             if(DBcontrol.rs.next())

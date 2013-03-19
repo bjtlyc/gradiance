@@ -6,23 +6,23 @@ import java.util.*;
 //abstract 
 class User {
 
-    public String userid = null; 
+    public String mid = null; 
     public String name = null; 
-    public String major = null; 
+    public String dept = null; 
     public static long maxid=0;
     public int role=0; 
     public HashMap<Integer,Course> clist = new HashMap<Integer,Course>(); 
 
     User(){}
-    User(String userid,String name,String major)
+    User(String mid,String name,int role)
     {
-        this.userid = userid;
+        this.mid = mid;
         this.name = name;
-        this.major = major;
+        this.role = role;
     }
     static void init()
     {
-        String s = "select count(*) as num from users";
+        String s = "select count(*) as num from member";
         DBcontrol.query(s);
         try{
             if(DBcontrol.rs.next())
@@ -43,11 +43,11 @@ class User {
             switch(choice)
             {
                 case '1':
-                    while(selectCourse())
+                    while(selectCourse(role))
                         continue;
                     break;
                 case '2':
-                    while(addCourse())
+                    while(addCourse(role))
                         continue;
                     break;
                 case '3':
@@ -59,12 +59,12 @@ class User {
     }
 
     boolean selectCourse(int role){
-        //System.out.println("student"+this.userid);
+        //System.out.println("student"+this.mid);
         String s;
         if(role == 0)  // role is student
-            DBcontrol.query("select C.token,C.cid,C.cname from users S,enroll E,course C where E.token = C.token and S.userid = '" + this.userid +"'");
+            DBcontrol.query("select token,cid,cname from member S,enroll E,course C where E.token = C.token and S.mid = E.mid and S.mid = '" + this.mid +"'");
         else if(role == 1)// role is professor 
-            DBcontrol.query("select C.token,C.cid,C.cname from users S,enroll E,course C where E.token = C.token and S.userid = '" + this.userid +"'");
+            DBcontrol.query("select token,cid,cname from member M,course C where M.mid = C.teacherid and M.mid = '" + this.mid +"'");
         int coursenum = 1;
         try{
             while(DBcontrol.rs.next())
@@ -72,7 +72,7 @@ class User {
                 String cid = DBcontrol.rs.getString("cid");
                 String token = DBcontrol.rs.getString("token");
                 String cname = DBcontrol.rs.getString("cname");
-                Course course = new Course(cid,cname,token,userid);
+                Course course = new Course(cid,cname,token,mid);
                 clist.put(coursenum++,course);
                 //System.out.print(cid+cname);
             }
@@ -101,10 +101,9 @@ class User {
         return false;
     }
     boolean addCourse()
-    {
-
-        //Course course = new Course();
-    }
+    {}        //Course course = new Course()
+    boolean aboutCourse(Course course)
+    {}
     boolean showCourse()
     {
         if(clist.isEmpty())

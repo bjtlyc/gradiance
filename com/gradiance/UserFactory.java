@@ -2,12 +2,10 @@ package com.gradiance;
 
 class UserFactory {
 
-    public static User createUser(String new_role)
+    public static User createUser(String id, String name,int role)
     {
-        if(new_role.equals("prof"))
-        {
-            return new Prof();
-        }
-        return new Student();
+        if(role == 1)
+            return new Prof(id,name,role);
+        return new Student(id,name,role);
     }
 }

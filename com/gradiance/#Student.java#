@@ -1,0 +1,94 @@
+package com.gradiance;
+import java.io.*;
+
+class Student extends User{
+
+
+    Student(){}
+    Student(String userid, String name, String major)
+    {
+        super(userid,name,major);
+    }
+    
+    boolean selectCourse(){
+        System.out.println("student"+this.userid);
+        String s = "select C.token,C.cid,C.cname from users S,enroll E,course C where E.token = C.token and S.userid = '" + this.userid +"'"; 
+        //String s = "select * from course";
+        DBcontrol.query(s);
+        int coursenum = 1;
+        try{
+            while(DBcontrol.rs.next())
+            {
+                String cid = DBcontrol.rs.getString("cid");
+                String token = DBcontrol.rs.getString("token");
+                String cname = DBcontrol.rs.getString("cname");
+                Course course = new Course(cid,cname,token,userid);
+                clist.put(coursenum++,course);
+                //System.out.print(cid+cname);
+            }
+        }catch(Throwable oops){
+            System.err.println("stduent oops error");
+            //oops.printStackTrace();
+        }
+        if(showCourse())
+        {
+            InputStreamReader cin = InputStreamReader(System.in);
+            int choice = cin.read();
+            if(choice==clist.size()+1)
+                return false;
+            Course course = clist.get(choice);
+            if(course!=null)
+            {
+                while(course.aboutCourse())
+                    continue;
+            }
+            else
+            {
+                System.out.println("The course id is invalid");
+                return true;
+            }
+        }
+        return false;
+    }
+    boolean addCourse()
+    {
+        Console c = System.console();
+        if(c==null)
+        {
+            System.err.println("no console");
+            System.exit(0);
+        }
+        String course_token = c.readLine("Please enter a course token");
+        String q = "select * from course where token='"+course_token+"'";
+        DBcontrol.query(q);
+        try{
+            if(DBcontrol.rs.next())
+            {
+                String cid = DBcontrol.rs.getString("cid");
+                String token = DBcontrol.rs.getString("token");
+                String cna
+
+		    me = DBcontrol.rs.getString("cname");
+                Course course = new Course(cid,cname,token,userid);
+                String u = "insert into enroll values ('"+userid+"','"+course_token+"','stud')";
+                DBcontrol.update(u);
+                while(course.aboutCourse())
+                    continue;
+
+            }
+            else
+            {
+                System.out.println("This token is invalid");
+                return false;
+            }
+        }catch(Throwable oops){
+            System.out.println("Error when add course");
+        }
+    }
+            
+
+    boolean viewScore();
+    boolean attemptHomework();
+    boolean viewPastSubmit();
+}
+
