@@ -6,7 +6,7 @@ import java.util.*;
 class Util{
 
     public static Console c;
-    public Random rg;
+    public static Random rg;
     public static SimpleDateFormat date_format = new SimpleDateFormat("dd-MMM-yy");
     static{
         c = System.console();
@@ -16,10 +16,10 @@ class Util{
     }
     public static Scanner sc = new Scanner(c.reader());
     
-    static Date parsekDate(String str)
+    static Date parseDate(String str)
     {
         try{
-            Date date = this.date_format.parse(str);
+            Date date = date_format.parse(str);
             return date;
         }catch(ParseException e){
             System.err.println("The date is invalid");

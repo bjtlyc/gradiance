@@ -52,10 +52,12 @@ public class StartPanel
         if(verify(user_id, password))
         {
             //User user = UserFactory.createUser("default");
+            
             User user=null;
+            int role=0;
             try{
-                    String name = DBcontrol.rs.getString("uname");
-                    int role = DBcontrol.rs.getInt("faculty");
+                    String name = DBcontrol.rs.getString("mname");
+                    role = DBcontrol.rs.getInt("faculty");
                     //user = new User(Long.parseLong(user_id),name,major,role);
                     user = UserFactory.createUser(user_id,name,role);
                 }catch(Throwable oops){
@@ -83,7 +85,7 @@ public class StartPanel
         String pwd = new String(password);
         String major = c.readLine("Enter your major: ");
         //String role = c.readLine("Enter your role: ");
-        String q = "insert into member values ('"+userid+"','"+username+"','"+pwd+"',0";//'"+major+"')";
+        String q = "insert into member values ('"+userid+"','"+username+"','"+pwd+"',0)";//'"+major+"')";
         DBcontrol.update(q);
         User user = new Student(userid,username,0);
         System.out.println("Create User Successfully, welcome "+username);

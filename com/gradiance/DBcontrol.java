@@ -19,6 +19,7 @@ public class DBcontrol {
     static Connection conn = null;
     public static Statement stmt = null;
     public static ResultSet rs = null;
+    public static ResultSetMetaData meta = null;
 
     DBcontrol(){
     
@@ -62,11 +63,13 @@ public class DBcontrol {
         }
     }
 
-    static void update(String q){
+    static boolean update(String q){
         try{
             stmt.executeUpdate(q);
+            return true;
         }catch(Throwable oops){
             oops.printStackTrace();
+            return false;
         }
     }
 

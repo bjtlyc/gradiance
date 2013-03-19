@@ -1,6 +1,6 @@
 package com.gradiance;
-import java.sql.*;
 import java.io.*;
+import java.util.*;
 
 
 class Prof extends User{
@@ -11,33 +11,30 @@ class Prof extends User{
     }
     boolean aboutCourse(Course course)
     {
-        System.out.println("Course Options:\n1.View Scores\n2.Attempt Homework\n3.View Past Submission");
-
-       InputStreamReader cin = new InputStreamReader(System.in);
-       int choice = cin.read();
+       int choice = Util.inputInt("For "+course.cid+":\n1.Add homework\n2.Edit  Homework\n3.Add question\n4.Add answer\n5.Reports\n6.Back");
        switch(choice)
        {
-           case '1':
+           case 1:
                while(addHomework(course))
                    continue;
                break;
-           case '2':
+           case 2:
                while(editHomework(course))
                    continue;
                break;
-           case '3':
+           case 3:
                while(addQuestion(course))
                    continue;
                break;
-           case '4':
+           case 4:
                while(addAnswer(course))
                    continue;
                break;
-           case '5':
+           case 5:
                while(report(course))
                    continue;
                break;
-           case '6':
+           case 6:
                return false;
            default:
                return true;
@@ -53,17 +50,29 @@ class Prof extends User{
             System.err.println("no console");
             System.exit(0);
         }
-        String cid = c.readLine("Please enter the course id");
-        String course_token = c.readLine("Please enter the course token");
-        String cname = c.readLine("Please enter the course name");
+        String cid = c.readLine("Please enter the course id: ").toUpperCase();
+        String course_token = c.readLine("Please enter the course token: ").toUpperCase();
+        String cname = c.readLine("Please enter the course name: ");
         Date start_date=null,end_date=null;
+        String start_date_str=null,end_date_str=null;
         while(start_date==null)
-            start_date = Util.checkDate(c.readLine("Please enter the start date(in the format of dd-MMM-yy(27-Apr-91))"));
+        {
+            start_date_str=c.readLine("Please enter the start date(in the format of dd-MMM-yy(27-Apr-91))");
+            start_date = Util.parseDate(start_date_str);
+        }
         while(end_date==null)
-            end_date = Util.checkDate(c.readLine("Please enter the end date(in the format of dd-MMM-yy(27-Apr-91))"));
+        {
+            end_date_str = c.readLine("Please enter the end date(in the format of dd-MMM-yy(27-Apr-91))");
+            end_date = Util.parseDate(end_date_str);
+        }
+        if(end_date.before(start_date))
+        {
+            System.out.println("Invalid: end date is before start date");
+            return true;
+        }
         try{
-                Course course = new Course(cid,cname,token,mid);
-                String u = "insert into course values ('"+mid+"','"+course_token+"','"+course_token+"','"+course_token+"',)";
+                Course course = new Course(cid,course_token,cname,mid);
+                String u = "insert into course values ('"+cid+"','"+course_token+"','"+cname+"','"+start_date_str+"','"+end_date_str+"','"+this.mid+"')";
                 DBcontrol.update(u);
                 while(aboutCourse(course))
                     continue;
@@ -76,40 +85,40 @@ class Prof extends User{
 
     boolean addHomework(Course course)
     {
-        int hid = Homework.getid(); 
-        String hwtitle = c.readLine("Please enter the title for the homework");
-        Date start_date=null,end_date=null;
-        String start_date_str,end_date_str;
+        int hwid = Homework.getid(course.token); 
+        System.out.println(hwid);
+        String hwtitle = Util.c.readLine("Please enter the title for the homework: ");
+        String start_date_str=null,end_date_str=null;
         while(true)
         {
+            Date start_date=null,end_date=null;
             while(start_date==null)
             {
-                start_date_str = c.readLine("Please enter the start date(in the format of YYYYMMDD)");
+                start_date_str = Util.c.readLine("Please enter the start date(in the format of dd-MMM-yy): ");
                 start_date = Util.parseDate(start_date_str);
             }
             while(end_date==null)
             {
-                end_date_str = c.readLine("Please enter the end date(in the format of YYYYMMDD)");
+                end_date_str = Util.c.readLine("Please enter the end date(in the format of dd-MMM-yy): ");
                 end_date = Util.parseDate(end_date_str);
             }
             if(start_date.after(end_date))
-                continue;
-            else
             {
                 System.out.println("The date is invalid");
-                break;
+                continue;
             }
+            else
+                break;
         }
-        int attemptnum=inputInt("Please enter the number of attempts allowed: ");
-        int score_selection=inputInt("Please enter one of the score selection way: \n1.latest\n2.highest ");
-        int qnum=inputInt("Please enter the number of questions: ");
-        int r_ans_p=inputInt("Please enter the points for right answer: ");
-        int w_ans_p=inputInt("Please enter the points for wrong answer: ");
-        
+        int attemptnum=Util.inputInt("Please enter the number of attempts allowed: ");
+        String ssmethod =Util.c.readLine("Please enter the score selection way(in word): \n1.first\n2.last\n3.max\n4.avg\n");
+        int qnum=Util.inputInt("Please enter the number of questions: ");
+        int r_ans_p=Util.inputInt("Please enter the points for right answer: ");
+        int w_ans_p=Util.inputInt("Please enter the points for wrong answer: ");
         try{
-                //Homework hw = new Homework(hwid,start_date.,end_date,attemptnum,score_selection,qnum,r_ans_p,w_ans_p);
-                String u = "insert into course values ('"+token+"',"+hwid+",'"+hwtitle+"',"+attemptnum+",'"+start_date+"','"+end_date+"',"+qnum+","+r_ans_p+","+w_ans_p+","+score_selection+")";
-                DBcontrol.update(u);
+            String u = "insert into homework values ('"+course.token+"',"+hwid+",'"+hwtitle+"',"+qnum+","+attemptnum+",'"+start_date_str+"','"+end_date_str+"',"+r_ans_p+","+w_ans_p+",'"+ssmethod+"')";
+                if(!DBcontrol.update(u))
+                    return false;
                 System.out.println("Add a new course successfully.");
                 //while(aboutHomework(hw))
                 //    continue;
@@ -124,8 +133,7 @@ class Prof extends User{
     {
         if(course.showHomework(1))
         {
-            InputStreamReader cin = InputStreamReader(System.in);
-            int choice = cin.read();
+            int choice = Util.inputInt("");
             if(choice == course.hwnum+1 )
                 return false;
             else if(choice > course.hwnum || choice < 1)
@@ -147,11 +155,10 @@ class Prof extends User{
     {
         if(course.showTopic())
         {
-            InputStreamReader cin = InputStreamReader(System.in);
-            int choice = cin.read();
-            if(choice == topic_num+1 )
+            int choice = Util.inputInt("");
+            if(choice == course.topic_num+1 )
                 return false;
-            else if(choice > topic_num || topic_num < 1)
+            else if(choice > course.topic_num || choice < 1)
             {
                 System.out.println("Invalid choice");
                 return true;
@@ -167,13 +174,51 @@ class Prof extends User{
         return false;
 
     }
-    boolean addAnswer()
+    boolean addAnswer(Course course)
     {
+        if(course.showQuestion())
+        {
+            int choice = Util.inputInt("");
+            if(choice == course.cqlist.size()+1 )
+                return false;
+            else if(choice > course.cqlist.size() || choice < 1)
+            {
+                System.out.println("Invalid choice");
+                return true;
+            }
+            else
+            {
+                Question q = course.cqlist.get(choice-1);
+                while(q.addAnswer())
+                    continue;
+            }
+        }
+        else
+            System.out.println("There is no topic");
+        return false;
     }
-    boolean report()
+    boolean report(Course course)
     {
-        String q = Util.c.readLine("Please enter the query");
-        //DBcontrol.query();
+        String q = Util.c.readLine("Please enter the query: ");
+        DBcontrol.query(q);
+        try{
+            DBcontrol.meta = DBcontrol.rs.getMetaData();
+            int columnnum = DBcontrol.meta.getColumnCount();
+            while(DBcontrol.rs.next())
+            {
+                for(int col =1 ;col < columnnum;col++)
+                {
+                    Object value = DBcontrol.rs.getObject(col);
+                    if(value != null)
+                        System.out.print(value.toString()+"\t|\t");
+                }
+                System.out.print("\n");
+            }
+        }catch(Throwable oops){
+            oops.printStackTrace();
+        }
+
+        return false;
     }
 
 }

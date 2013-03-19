@@ -15,13 +15,14 @@ class Course {
     //public HashMap<Integer,Homework> hwlist = new HashMap<Integer,Homework>();
     public static ArrayList<Integer> list = new ArrayList<Integer>();
     public static ArrayList<Homework> hwlist = new ArrayList<Homework>();
+    public static ArrayList<Question> cqlist = new ArrayList<Question>();
 
     Course(){}
     Course(String cid,String token,String cname,String mid)
     {
         this.cid = cid;
-        this.cname = cname;
         this.token = token;
+        this.cname = cname;
         this.mid = mid;
     }
 
@@ -32,11 +33,11 @@ class Course {
         System.out.println("Please select a homework\nHomework_number | Attempt_number");
         String s=null;
         if(role == 1)
-            s = "select * from homework where token='"+this.token+"'";
+            s = "select * from homework where token='"+this.token.toUpperCase()+"'";
         else if(role == 0)
-            s = "select * from report where token='"+this.token+"' and mid ='"+this.mid+"'"; 
-        DBcontrol.query(s);
+            s = "select * from report where token='"+this.token.toUpperCase()+"' and mid ='"+this.mid+"'"; 
         try{
+            DBcontrol.query(s);
             while(DBcontrol.rs.next())
             {
                 hwnum++;
@@ -52,12 +53,13 @@ class Course {
                 else if(role == 0)
                 {
                     int attemptnum = DBcontrol.rs.getInt("attnum"); 
-                    int score = DBcontrol.rs.getInt("score"); 
-                    System.out.println(hwnum+".HW"+hwid+" "+attemptnum+" attempt");
+                    int score = DBcontrol.rs.getInt("rscore"); 
+                    System.out.println(hwnum+".HW "+hwid+"      | "+attemptnum+"-attempt");
                     Homework hw = new Homework(hwid,this.token,score);
                     hwlist.add(hw);
                 }
             }
+            System.out.println((hwnum+1)+".back");
             return true;
         }catch(Throwable oops){
             System.err.println("Get homework error");
@@ -74,15 +76,15 @@ class Course {
             while(DBcontrol.rs.next())
             {
                 int topic_id = DBcontrol.rs.getInt("tid");
-                int topic_name = DBcontrol.rs.getInt("tname");
-                System.out.println(++topic_num+". "+topic_name);
+                String topic_name = DBcontrol.rs.getString("tname");
+                System.out.println((++topic_num)+". "+topic_name);
                 list.add(topic_id);
             }
             return true;
         }catch(Throwable oops){
+            oops.printStackTrace();
             System.out.println("Get topic error");
         }
-        System.out.println("there is no related topics about this course");
         return false;
     }
 
@@ -101,18 +103,80 @@ class Course {
                 int retrynum = DBcontrol.rs.getInt("retrynum");
                 int point = DBcontrol.rs.getInt("point");
                 int penalty = DBcontrol.rs.getInt("penalty");
-                int ssmethod = DBcontrol.rs.getInt("ssmethod");
+                String ssmethod = DBcontrol.rs.getString("ssmethod");
                 System.out.println(hwnum+".HW "+hwid+" "+hwtitle);
                 Homework hw = new Homework(hwid,this.mid,this.token,qnum,retrynum,point,penalty,ssmethod);
                 hwlist.add(hw);
             }
+            System.out.println((hwnum+1)+".back");
             return true;
         }catch(Throwable oops){
+            oops.printStackTrace();
             System.err.println("Error: Get Open Homework");
         }
         System.out.println("there is no open course about this course");
         return false;
     }
 
+    boolean showPastHomework()
+    {
+        hwlist.clear();
+        hwnum=0;
+        DBcontrol.query("select * from homework h,report r where h.hwid=r.hwid and h.token='"+this.token+"' and r.mid='"+this.mid+"'");
+        try{
+            while(DBcontrol.rs.next())
+            {
+                hwnum++;
+                int hwid = DBcontrol.rs.getInt("hwid");
+                String hwtitle = DBcontrol.rs.getString("hwtitle");
+                int qnum = DBcontrol.rs.getInt("qnum");
+                int retrynum = DBcontrol.rs.getInt("retrynum");
+                int attnum = DBcontrol.rs.getInt("attnum");
+                Date end_date = DBcontrol.rs.getDate("hwend");
+                int point = DBcontrol.rs.getInt("point");
+                int penalty = DBcontrol.rs.getInt("penalty");
+                String ssmethod = DBcontrol.rs.getString("ssmethod");
+                if(end_date.after(new Date()))
+                    System.out.println(hwnum+".HW "+hwid+" "+hwtitle+"      "+attnum+"-attempt");
+                else
+                    System.out.println(hwnum+".HW "+hwid+" "+hwtitle+"      "+attnum+"-attempt.Already due");
+                Homework hw = new Homework(hwid,this.mid,this.token,qnum,retrynum,point,penalty,ssmethod);
+                hwlist.add(hw);
+            }
+            System.out.println((hwnum+1)+".back");
+            return true;
+        }catch(Throwable oops){
+            oops.printStackTrace();
+            System.err.println("Error: Get Open Homework");
+        }
+        System.out.println("there is no open course about this course");
+        return false;
+    }
+    boolean showQuestion()
+    {
+        cqlist.clear();
+        int qnum=0;
+        DBcontrol.query("select * from c_topic c,q_topic q,question qq where c.tid=q.tid and q.qid=qq.qid and token='"+this.token+"'");
+        try{
+            while(DBcontrol.rs.next())
+            {
+                qnum++;
+                int qid = DBcontrol.rs.getInt("qid");
+                String qcontent = DBcontrol.rs.getString("qcontent");
+                System.out.println(qnum+".Q"+qid+"\t"+qcontent);
+                Question q = new Question(qid,qcontent);
+                cqlist.add(q);
+            }
+            System.out.println((qnum+1)+".back");
+            return true;
+        }catch(Throwable oops){
+            oops.printStackTrace();
+            System.err.println("Error: Get Question");
+        }
+        System.out.println("there is no question about this course");
+        return false;
+    }
+
+
+
 }
-    

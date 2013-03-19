@@ -1,5 +1,7 @@
 package com.gradiance;
 import java.io.*;
+import java.util.*;
+import java.text.*;
 
 class Student extends User{
 
@@ -11,9 +13,7 @@ class Student extends User{
     
     boolean addCourse()
     {
-        if(Util.c==null)
-            System.exit(0);
-        String course_token = Util.c.readLine("Please enter a course token");
+        String course_token = Util.c.readLine("Please enter a course token: ").toUpperCase();
         String q = "select * from course where token='"+course_token+"'";
         DBcontrol.query(q);
         try{
@@ -22,8 +22,8 @@ class Student extends User{
                 String cid = DBcontrol.rs.getString("cid");
                 String token = DBcontrol.rs.getString("token");
                 String cname = DBcontrol.rs.getString("cname");
-                Course course = new Course(cid,cname,token,userid);
-                String u = "insert into enroll values ('"+userid+"','"+course_token+"','stud')";
+                Course course = new Course(cid,token,cname,this.mid);
+                String u = "insert into enroll values ('"+this.mid+"','"+course_token+"','stud')";
                 DBcontrol.update(u);
                 System.out.println("Enroll successfully");
                 while(aboutCourse(course))
@@ -37,29 +37,28 @@ class Student extends User{
         }catch(Throwable oops){
             System.out.println("Error when add course");
         }
+        return true;
     }
 
     boolean aboutCourse(Course course)
     {
-        System.out.println("Course Options:\n1.View Scores\n2.Attempt Homework\n3.View Past Submission");
 
-       InputStreamReader cin = new InputStreamReader(System.in);
-       int choice = cin.read();
+       int choice = Util.inputInt("Course Options:\n1.View Scores\n2.Attempt Homework\n3.View Past Submission\n4.back");
        switch(choice)
        {
-           case '1':
+           case 1:
                while(viewScore(course))
                    continue;
                break;
-           case '2':
-               while(attemptHw(course))
+           case 2:
+               while(attemptHomework(course))
                    continue;
                break;
-           case '3':
+           case 3:
                while(viewPastSubmit(course))
                    continue;
                break;
-           case '4':
+           case 4:
                return false;
            default:
                return true;
@@ -71,15 +70,41 @@ class Student extends User{
     {
         if(course.showHomework(0))
         {
-            InputStreamReader cin = InputStreamReader(System.in);
-            int choice = cin.read();
-            Homework temp = hwlist.get(choice);
-            if(temp!=null)
-                System.out.println(hwlist.get(choice).score);
-            else
+            int choice = Util.inputInt("");
+            if(choice == course.hwlist.size()+1)
+                return false;
+            if(choice > course.hwlist.size()+1 || choice <0)
             {
                 System.out.println("Invalid Choice, please enter another number");
                 return true;
+            }
+            else
+            {
+                Homework temp = course.hwlist.get(choice-1);
+                System.out.println("Score: "+temp.score+"\n");
+            }
+        }
+        else
+            System.out.println("You don't have homework attemp");
+        return true;
+    }
+
+    boolean viewPastSubmit(Course course)
+    {
+        if(course.showPastHomework())
+        {
+            int choice = Util.inputInt("");
+            if(choice == course.hwlist.size()+1)
+                return false;
+            else if(choice > course.hwlist.size()+1 || choice <0)
+            {
+                System.out.println("Invalid Choice, please enter another number");
+                return true;
+            }
+            else
+            {
+                Homework temp = course.hwlist.get(choice-1);
+                temp.showReport();
             }
         }
         else
@@ -87,23 +112,22 @@ class Student extends User{
         return false;
     }
 
-    boolean viewPastSubmit(Course course)
-    {
-        return false;
-    }
     boolean attemptHomework(Course course)
     {
         if(course.showOpenHomework())
         {
-            InputStreamReader cin = InputStreamReader(System.in);
-            int choice = cin.read();
-            Homework temp = hwlist.get(choice);
-            if(temp!=null)
-                temp.doHomework();
-            else
+            int choice = Util.inputInt("");
+            if(choice == course.hwlist.size()+1)
+                return false;
+            else if(choice > course.hwlist.size()+1 || choice <0)
             {
                 System.out.println("Invalid Choice, please enter another number");
                 return true;
+            }
+            else
+            {
+                Homework temp = course.hwlist.get(choice-1);
+                temp.doHomework();
             }
         }
         else

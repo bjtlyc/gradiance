@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 
 //abstract 
-class User {
+abstract class User {
 
     public String mid = null; 
     public String name = null; 
@@ -47,7 +47,7 @@ class User {
                         continue;
                     break;
                 case '2':
-                    while(addCourse(role))
+                    while(addCourse())
                         continue;
                     break;
                 case '3':
@@ -62,17 +62,17 @@ class User {
         //System.out.println("student"+this.mid);
         String s;
         if(role == 0)  // role is student
-            DBcontrol.query("select token,cid,cname from member S,enroll E,course C where E.token = C.token and S.mid = E.mid and S.mid = '" + this.mid +"'");
+            DBcontrol.query("select C.token,C.cid,C.cname from member S,enroll E,course C where E.token = C.token and S.mid = E.mid and S.mid = '" + this.mid +"'");
         else if(role == 1)// role is professor 
-            DBcontrol.query("select token,cid,cname from member M,course C where M.mid = C.teacherid and M.mid = '" + this.mid +"'");
+            DBcontrol.query("select token,cid,cname from member M,course C where M.mid = C.profid and M.mid = '" + this.mid +"'");
         int coursenum = 1;
         try{
             while(DBcontrol.rs.next())
             {
-                String cid = DBcontrol.rs.getString("cid");
-                String token = DBcontrol.rs.getString("token");
+                String cid = DBcontrol.rs.getString("cid").toUpperCase();
+                String token = DBcontrol.rs.getString("token").toUpperCase();
                 String cname = DBcontrol.rs.getString("cname");
-                Course course = new Course(cid,cname,token,mid);
+                Course course = new Course(cid,token,cname,mid);
                 clist.put(coursenum++,course);
                 //System.out.print(cid+cname);
             }
@@ -82,15 +82,33 @@ class User {
         }
         if(showCourse())
         {
-            InputStreamReader cin = InputStreamReader(System.in);
-            int choice = cin.read();
+            int choice = Util.inputInt("");
             if(choice==clist.size()+1)
                 return false;
             Course course = clist.get(choice);
             if(course!=null)
             {
+                if(role == 0)
+                {
+                    DBcontrol.query("select role from enroll where mid='"+mid+"' and token='"+course.token+"'");
+                    String ifta=null;
+                    try{
+                        if(DBcontrol.rs.next())
+                            ifta = DBcontrol.rs.getString("role");
+                    }catch(Throwable oops){
+                        oops.printStackTrace();
+                    }
+                    if(ifta.equals("ta"))
+                    {
+                        Prof ta = new Prof(mid,name,1);
+                        while(ta.aboutCourse(course))
+                            continue;
+                        return true; 
+                    }
+                }
                 while(aboutCourse(course))
                     continue;
+
             }
             else
             {
@@ -100,10 +118,6 @@ class User {
         }
         return false;
     }
-    boolean addCourse()
-    {}        //Course course = new Course()
-    boolean aboutCourse(Course course)
-    {}
     boolean showCourse()
     {
         if(clist.isEmpty())
@@ -115,8 +129,17 @@ class User {
         //for(String key : keys)
         System.out.println("Please select a course by entering the number");
         for(int i=1;i<=clist.size();i++)
-            System.out.println(i+"."+clist.get(i).get(token)+" "+clist.get(i).cname);
+            System.out.println(i+"."+clist.get(i).token+" "+clist.get(i).cname);
         System.out.println((clist.size()+1)+".Back");
         return true; 
     }
+    boolean addCourse(){return true;}        //Course course = new Course()
+    boolean aboutCourse(Course course){return true;}
+    boolean viewScore(Course course){return true;}
+    boolean viewPastSubmit(Course course){return true;}
+    boolean attemptHomework(Course course){return true;}
+    boolean addHomework(Course course){return true;}
+    boolean editHomework(Course course){return true;}
+    boolean addQuestion(Course course){return true;}
+    boolean addAnswer(Course course){return true;}
 }

@@ -2,14 +2,31 @@ package com.gradiance;
 
 import java.io.*;
 import java.util.*;
+import java.sql.*;
 
 
 class Question{
     public int tid;
+    public int qid;
     public String content;
     public static int maxqid;
+    public static int maxansid;
     static{
-        maxqid = 0;
+        try{
+            DBcontrol.query("select max(qid) from question");
+            if(DBcontrol.rs.next())
+                maxqid = DBcontrol.rs.getInt("max(QID)")+1;
+            else
+                maxqid = 1;
+            DBcontrol.query("select max(ansid) from answer");
+            if(DBcontrol.rs.next())
+                maxansid = DBcontrol.rs.getInt("max(ANSID)")+1;
+            else
+                maxansid = 1;
+        }catch(Throwable oops){
+            oops.printStackTrace();
+            System.err.println("query question error");
+        }
     }
     public ArrayList<Answer> canslist = new ArrayList<Answer>();
     public ArrayList<Answer> incanslist = new ArrayList<Answer>();
@@ -18,27 +35,15 @@ class Question{
     Question(int tid)
     {
         this.tid = tid;
-        init();
     }
     Question(int qid,String content)
     {
         this.qid = qid;
         this.content = content;
     }
-    void init()
-    {
-        try{
-            DBconrtol.query("select qid from question where qid >= all (select qid from question)");
-            if(DBcontrol.rs.next())
-                maxqid = DBcontrol.getInt("qid")+1;
-            else
-                maxqid = 1;
-        }catch(Throwable oops){
-            System.err.println("query question error");
-        }
-    }
     void add()
     {
+        System.out.println(maxqid+" "+maxansid);
         String q = Util.c.readLine("Enter question");
         String longexp = Util.c.readLine("Enter an explaination for the question");
         int qdif = Util.inputInt("Enter the difficulty level for the question");
@@ -50,18 +55,37 @@ class Question{
         String shortexp3 = Util.c.readLine("Enter an explaination for the answer");
         String incans3 = Util.c.readLine("Enter the third wrong answer");
         String shortexp4 = Util.c.readLine("Enter an explaination for the answer");
-        DBcontrol.update("insert into question(qid,qcontent,qdif,longexp) values ("+maxqid+"'"+q+"',"+qdif+",'"+longexp+"')");
+        DBcontrol.update("insert into question values ("+maxqid+",'"+q+"',"+qdif+",'"+longexp+"')");
         DBcontrol.update("insert into q_topic values("+tid+","+maxqid+")");
-        DBcontrol.update("insert into answer values("+maxqid+","+maxansid+",'"+cans+"','t','"+shortexp1+"')");
+        DBcontrol.update("insert into answer values("+maxqid+","+maxansid+",'"+cans+"','T','"+shortexp1+"')");
         maxansid++;
-        DBcontrol.update("insert into answer values("+maxqid+","+maxansid+",'"+incans1+"','f','"+shortexp2+"')");
+        DBcontrol.update("insert into answer values("+maxqid+","+maxansid+",'"+incans1+"','F','"+shortexp2+"')");
         maxansid++;
-        DBcontrol.update("insert into answer values("+maxqid+","+maxansid+",'"+incans2+"','f','"+shortexp3+"')");
+        DBcontrol.update("insert into answer values("+maxqid+","+maxansid+",'"+incans2+"','F','"+shortexp3+"')");
         maxansid++;
-        DBcontrol.update("insert into answer values("+maxqid+","+maxansid+",'"+incans3+"','f','"+shortexp4+"')");
+        DBcontrol.update("insert into answer values("+maxqid+","+maxansid+",'"+incans3+"','F','"+shortexp4+"')");
         maxansid++;
         maxqid++;
         
+    }
+    boolean addAnswer()
+    {
+        int TorF = Util.inputInt("Enter answer type\n1.Correct\n2.Incorrect");
+        if(TorF != 1 && TorF !=2 )
+        {
+            System.out.println("invalid choice");
+            return true;
+        }
+        String answer = Util.c.readLine("Enter answer: ");
+        String shortexp = Util.c.readLine("Enter a short explaination: ");
+        if(TorF == 1)
+            DBcontrol.update("insert into answer values( "+this.qid+","+maxansid+",'"+answer+"','T','"+shortexp+"')");
+        else if(TorF == 2)
+            DBcontrol.update("insert into answer values( "+this.qid+","+maxansid+",'"+answer+"','F','"+shortexp+"')");
+        maxansid++;
+        System.out.println("Add answer successfully");
+        return false;
+
     }
 
 }
