@@ -355,7 +355,7 @@ class Homework{
             if(DBcontrol.rs.next())
             {
                 int quenum = DBcontrol.rs.getInt("count(*)");
-                if(this.qnum>=quenum)
+                if(this.qnum<=quenum)
                 {
                     System.out.println("Already reach question limit");
                     return false;
