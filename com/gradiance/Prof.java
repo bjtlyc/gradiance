@@ -11,7 +11,7 @@ class Prof extends User{
     }
     boolean aboutCourse(Course course)
     {
-       int choice = Util.inputInt("For "+course.cid+":\n1.Add homework\n2.Edit  Homework\n3.Add question\n4.Add answer\n5.Reports\n6.Back");
+       int choice = Util.inputInt("For "+course.cid+":\n1.Add homework\n2.Edit Homework\n3.Add question\n4.Add answer\n5.Reports\n6.Back");
        switch(choice)
        {
            case 1:
@@ -119,7 +119,20 @@ class Prof extends User{
             String u = "insert into homework values ('"+course.token+"',"+hwid+",'"+hwtitle+"',"+qnum+","+attemptnum+",'"+start_date_str+"','"+end_date_str+"',"+r_ans_p+","+w_ans_p+",'"+ssmethod+"')";
                 if(!DBcontrol.update(u))
                     return false;
-                System.out.println("Add a new course successfully.");
+                else
+                {
+                    System.out.println("Add a new homework successfully.");
+                    ArrayList<String> temp=new ArrayList<String>();
+                    DBcontrol.query("select mid from enroll where token='"+course.token+"'");
+                    try{
+                        while(DBcontrol.rs.next())
+                            temp.add(DBcontrol.rs.getString("mid"));
+                    }catch(Throwable oops){}
+                    for(int i=0;i<temp.size();i++)
+                    {
+                        DBcontrol.update("insert into hw_mem values('"+course.token+"',"+hwid+",'"+temp.get(i)+"',0,0)");
+                    }
+                }
                 //while(aboutHomework(hw))
                 //    continue;
                 return false;

@@ -127,7 +127,8 @@ class Student extends User{
             else
             {
                 Homework temp = course.hwlist.get(choice-1);
-                temp.doHomework();
+                while(temp.doHomework())
+                    continue;
             }
         }
         else

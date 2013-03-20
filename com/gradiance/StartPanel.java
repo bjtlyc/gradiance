@@ -13,19 +13,16 @@ public class StartPanel
         //User.init();
         while(true)
         {
-            System.out.println("Please input a number to make a choice"+
-                    "\n1.Login\n2.Create User\n3.Back");
-            InputStreamReader cin = new InputStreamReader(System.in);
-            int choice = cin.read();
+            int choice = Util.inputInt("Please input a number to make a choice\n1.Login\n2.Create User\n3.Back");
             switch(choice)
             {
-                case '1':
+                case 1:
                     UserLogin();//User user = UserLogin();
                     break;
-                case '2':
+                case 2:
                     CreateUser();
                     break;
-                case '3':
+                case 3:
                     DBcontrol.close(DBcontrol.stmt);
                     DBcontrol.close(DBcontrol.rs);
                     System.exit(0);
@@ -39,14 +36,8 @@ public class StartPanel
 
     void UserLogin() throws IOException
     {
-        Console c = System.console();
-        if(c==null)
-        {
-            System.err.println("no console");
-            System.exit(0);
-        }
-        String user_id = c.readLine("Enter your user id: ");
-        char [] password  = c.readPassword("Enter your password: ");
+        String user_id = Util.c.readLine("Enter your user id: ");
+        char [] password  = Util.c.readPassword("Enter your password: ");
         if(verify(user_id, password))
         {
             //User user = UserFactory.createUser("default");
@@ -84,7 +75,11 @@ public class StartPanel
         String major = c.readLine("Enter your major: ");
         //String role = c.readLine("Enter your role: ");
         String q = "insert into member values ('"+userid+"','"+username+"','"+pwd+"',0)";//'"+major+"')";
-        DBcontrol.update(q);
+        if(!DBcontrol.update(q))
+        {
+            System.out.println("create user error, the id is used");
+            return ;
+        }
         User user = new Student(userid,username,0);
         System.out.println("Create User Successfully, welcome "+username);
         while(user.doSomething())

@@ -19,6 +19,7 @@ class Homework{
     public int point;
     public int penalty;
     public ArrayList<Question> qlist = new ArrayList<Question>();
+    public HashMap<Integer,String> ans=new HashMap<Integer,String>();
 
     Homework(){}
     Homework(int hwid,String token, String start_date,String end_date)
@@ -79,7 +80,7 @@ class Homework{
                     return true;
                 }
                 else
-                    DBcontrol.update("update report set hwstart='"+this.start_date+"' where hwid="+this.hwid+" and token='"+this.token+"'");
+                    DBcontrol.update("update homework set hwstart='"+this.start_date+"' where hwid="+this.hwid+" and token='"+this.token+"'");
                 return false;
             case 2:
                 end_date=null;
@@ -95,7 +96,7 @@ class Homework{
                     return true;
                 }
                 else
-                    DBcontrol.update("update report set hwend='"+this.end_date+"' where hwid="+this.hwid+" and token='"+this.token+"'");
+                    DBcontrol.update("update homework set hwend='"+this.end_date+"' where hwid="+this.hwid+" and token='"+this.token+"'");
                 return false;
             case 3:
                 int attnum = Util.inputInt("Enter the number of attempts");
@@ -185,6 +186,8 @@ class Homework{
         int rindex=seed % 4;
         int [] record = new int[4];
         int truenum=0,falsenum=0,i=0;
+        String currdate = Util.date_format.format(new Date()); 
+        DBcontrol.update("insert into report values ('"+this.token+"',"+this.hwid+",'"+this.mid+"',"+curattnum+","+seed+","+score+",'"+currdate+"')");
         while(!qlist.isEmpty())
         {
             Question q = qlist.remove(seed%(qlist.size()));
@@ -217,18 +220,19 @@ class Homework{
             }
             DBcontrol.update("insert into stuans values ('"+this.token+"',"+this.hwid+",'"+this.mid+"',"+curattnum+","+q.qid+","+record[choice-1]+",'"+text+"')");
         }
-
-        String currdate = Util.date_format.format(new Date()); 
         int score = truenum*point + falsenum*penalty;
-        DBcontrol.update("insert into report values ('"+this.token+"',"+this.hwid+",'"+this.mid+"',"+curattnum+","+seed+","+score+",'"+currdate+"')");
-        return true;
+        DBcontrol.update("update report set rscore="+score+" where token='"+this.token+"' and hwid="+this.hwid+" and mid='"+this.mid+"' and attnum="+curattnum);
+
+        //if(curattnum==this.retrynum)
+        calculateScore(curattnum);
+        return false;
+
     }
 
     boolean showReport()
     {
         getQlist();
-        HashMap<Integer,String> ans=new HashMap<Integer,String>();
-        getStuAns(ans);
+        getStuAns();
 
         int seed = this.seed;
         Util.randomlist(seed,qlist);
@@ -253,6 +257,7 @@ class Homework{
                     record[select++]=q.incanslist.get(incnum++).ansid;
                 }
             }
+            try{
             if(ans.get((Integer)q.qid).equals("T")) 
             {
                 System.out.println("Your result: True");
@@ -262,6 +267,7 @@ class Homework{
                 System.out.println("Yours result: False");
             }
             System.out.println("Explaination: "+q.longexp);
+            }catch(NullPointerException e){System.out.println(ans.size());}
         }
         return true;
     }
@@ -270,7 +276,7 @@ class Homework{
     {
         qlist.clear();
         String qq = "select * from homework h,hw_ques hq,question q where h.hwid=hq.hwid and hq.qid=q.qid and h.token=hq.token and h.token='"+this.token+"' and h.hwid="+hwid;
-        System.out.println(qq);
+        //System.out.println(qq);
         DBcontrol.query(qq);
         try{
             while(DBcontrol.rs.next())
@@ -286,7 +292,7 @@ class Homework{
             System.out.println("");
         }
 
-        System.out.println(qlist.size());
+        //System.out.println(qlist.size());
 
         for(int i=0;i<qlist.size();i++)
         {
@@ -304,7 +310,7 @@ class Homework{
                     else
                         qlist.get(i).incanslist.add(a);
                 }
-            System.out.println(qlist.get(i).canslist.size()+" "+qlist.get(i).incanslist.size());
+            //System.out.println(qlist.get(i).canslist.size()+" "+qlist.get(i).incanslist.size());
             }catch(Throwable oops){
                 System.out.println("");
             }
@@ -312,8 +318,9 @@ class Homework{
 
     }
 
-    public void getStuAns(HashMap<Integer,String> ans)
+    public void getStuAns()
     {
+        ans.clear();
         DBcontrol.query("select a.qid,b.TorF from stuans a,answer b where a.token='"+this.token+"' and a.hwid="+this.hwid+" and a.attnum="+this.attnum+" and a.mid='"+this.mid+"' and a.qid=b.qid and a.ansid=b.ansid");
         try{
 
@@ -353,6 +360,20 @@ class Homework{
         else
             System.out.println("There is no Question");
         return false;
+    }
+    public void calculateScore(int curattnum)
+    {
+        float score=0;
+        DBcontrol.query("select rscore from report where token='"+this.token+"' and hwid="+this.hwid+" and mid='"+this.mid+"'");
+        try{
+            while(DBcontrol.rs.next())
+            {
+                score = score + DBcontrol.rs.getFloat("rscore");
+            }
+        }catch(Throwable oops){
+            System.out.println("ERROR");
+        }
+        DBcontrol.update("update hw_mem set hwscore="+score+",totalatt="+curattnum+" where token='"+this.token+"' and hwid="+this.hwid+" and mid='"+this.mid+"')");
     }
 
 
