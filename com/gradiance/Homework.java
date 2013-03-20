@@ -350,6 +350,19 @@ class Homework{
     }
     public boolean addQuetoHw()
     {
+        DBcontrol.query("select count(*) from hw_ques hq where hq.hwid="+this.hwid+" and token='"+this.token+"'");
+        try{
+            if(DBcontrol.rs.next())
+            {
+                int quenum = DBcontrol.rs.getInt("count(*)");
+                if(this.qnum>=quenum)
+                {
+                    System.out.println("Already reach question limit");
+                    return false;
+                }
+            }
+        }catch(Throwable oops)
+        {;}
         Course course = new Course(this.token);
         if(course.showQuestion())
         {

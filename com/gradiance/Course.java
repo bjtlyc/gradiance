@@ -50,7 +50,8 @@ class Course {
                 {
                     Date start_date = DBcontrol.rs.getDate("hwstart");
                     Date end_date = DBcontrol.rs.getDate("hwend");
-                    System.out.println(hwnum+".HW"+hwid+" ");
+                    String hwtitle = DBcontrol.rs.getString("hwtitle");
+                    System.out.println(hwnum+".HW"+hwid+" "+hwtitle);
                     Homework hw = new Homework(hwid,this.token,Util.date_format.format(start_date),Util.date_format.format(end_date));
                     hwlist.add(hw);
                 }

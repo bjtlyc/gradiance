@@ -259,4 +259,10 @@ class Prof extends User{
         return false;
     }
 
+    boolean showStudent()
+    {
+        DBcontrol.query("select * from enroll e,student s where e.");
+        return false;
+    }
+
 }
