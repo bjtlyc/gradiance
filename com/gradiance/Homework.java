@@ -160,12 +160,12 @@ class Homework{
     {
         int curattnum=0;
         DBcontrol.query("select max(attnum) from report where token='"+this.token+"' and hwid="+this.hwid+" and mid='"+this.mid+"'");
-        System.out.println("select max(attnum) from report where token='"+this.token+"' and hwid="+this.hwid+" and mid='"+this.mid+"'");
+        //System.out.println("select max(attnum) from report where token='"+this.token+"' and hwid="+this.hwid+" and mid='"+this.mid+"'");
         try{
             if(DBcontrol.rs.next())
             {
                 curattnum = DBcontrol.rs.getInt("max(attnum)");
-                System.out.println(retrynum+"before: "+ curattnum);
+                //System.out.println(retrynum+"before: "+ curattnum);
                 if(curattnum >= retrynum)
                 {
                     System.out.println("already reach sumbit limit");
@@ -373,7 +373,7 @@ class Homework{
         }catch(Throwable oops){
             System.out.println("ERROR");
         }
-        DBcontrol.update("update hw_mem set hwscore="+score+",totalatt="+curattnum+" where token='"+this.token+"' and hwid="+this.hwid+" and mid='"+this.mid+"')");
+        DBcontrol.update("update hw_mem set hwscore="+score+",totalatt="+curattnum+" where token='"+this.token+"' and hwid="+this.hwid+" and mid='"+this.mid+"'");
     }
 
 

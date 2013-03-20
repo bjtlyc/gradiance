@@ -46,17 +46,17 @@ class Question{
     void add()
     {
         System.out.println(maxqid+" "+maxansid);
-        String q = Util.c.readLine("Enter question");
-        String longexp = Util.c.readLine("Enter an explaination for the question");
-        int qdif = Util.inputInt("Enter the difficulty level for the question");
-        String cans = Util.c.readLine("Enter the correct answer");
-        String shortexp1 = Util.c.readLine("Enter an explaination for the answer");
-        String incans1 = Util.c.readLine("Enter the first wrong answer");
-        String shortexp2 = Util.c.readLine("Enter an explaination for the answer");
-        String incans2 = Util.c.readLine("Enter the second wrong answer");
-        String shortexp3 = Util.c.readLine("Enter an explaination for the answer");
-        String incans3 = Util.c.readLine("Enter the third wrong answer");
-        String shortexp4 = Util.c.readLine("Enter an explaination for the answer");
+        String q = Util.c.readLine("Enter a new question: ");
+        String longexp = Util.c.readLine("Enter an explaination for the question: ");
+        int qdif = Util.inputInt("Enter the difficulty level for the question: ");
+        String cans = Util.c.readLine("Enter the correct answer: ");
+        String shortexp1 = Util.c.readLine("Enter an explaination for the answer: ");
+        String incans1 = Util.c.readLine("Enter the first wrong answer: ");
+        String shortexp2 = Util.c.readLine("Enter an explaination for the answer: ");
+        String incans2 = Util.c.readLine("Enter the second wrong answer: ");
+        String shortexp3 = Util.c.readLine("Enter an explaination for the answer: ");
+        String incans3 = Util.c.readLine("Enter the third wrong answer: ");
+        String shortexp4 = Util.c.readLine("Enter an explaination for the answer: ");
         DBcontrol.update("insert into question values ("+maxqid+",'"+q+"',"+qdif+",'"+longexp+"')");
         DBcontrol.update("insert into q_topic values("+tid+","+maxqid+")");
         DBcontrol.update("insert into answer values("+maxqid+","+maxansid+",'"+cans+"','T','"+shortexp1+"')");
