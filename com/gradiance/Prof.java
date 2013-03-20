@@ -11,7 +11,7 @@ class Prof extends User{
     }
     boolean aboutCourse(Course course)
     {
-       int choice = Util.inputInt("For "+course.cid+":\n1.Add homework\n2.Edit Homework\n3.Add question\n4.Add answer\n5.Reports\n6.Back");
+       int choice = Util.inputInt("For "+course.cid+":\n1.Add homework\n2.Edit Homework\n3.Add question\n4.Add answer\n5.Reports\n6.Add topic\n7.Back");
        switch(choice)
        {
            case 1:
@@ -35,6 +35,10 @@ class Prof extends User{
                    continue;
                break;
            case 6:
+               while(addTopic(course))
+                   continue;
+               break;
+           case 7:
                return false;
            default:
                return true;
@@ -166,12 +170,12 @@ class Prof extends User{
 
     boolean addQuestion(Course course)
     {
-        if(course.showTopic())
+        if(course.showTopic(0))
         {
             int choice = Util.inputInt("");
-            if(choice == course.topic_num+1 )
+            if(choice == course.list.size()+1 )
                 return false;
-            else if(choice > course.topic_num || choice < 1)
+            else if(choice > course.list.size() || choice < 1)
             {
                 System.out.println("Invalid choice");
                 return true;
@@ -231,6 +235,27 @@ class Prof extends User{
             oops.printStackTrace();
         }
 
+        return false;
+    }
+    boolean addTopic(Course course)
+    {
+        if(course.showTopic(1))
+        {
+            int choice = Util.inputInt("");
+            if(choice == course.list.size()+1 )
+                return false;
+            else if(choice > course.list.size() || choice < 1)
+            {
+                System.out.println("Invalid choice");
+                return true;
+            }
+            else
+            {
+                course.linkTopic(course.list.get(choice-1));
+            }                
+        }
+        else
+            System.out.println("There is no topic");
         return false;
     }
 

@@ -72,18 +72,23 @@ class Course {
         return false;
     }
 
-    boolean showTopic()
+    boolean showTopic(int cOrQ)
     {
         list.clear();
-        DBcontrol.query("select T.tid,T.tname from topic T, c_topic C where C.tid=T.tid and C.token ='"+ this.token+"'");
+        int no=0;
+        if(cOrQ==0)
+            DBcontrol.query("select T.tid,T.tname from topic T, c_topic C where C.tid=T.tid and C.token ='"+ this.token+"'");
+        else if(cOrQ==1)
+            DBcontrol.query("select tid,tname from topic");
         try{
             while(DBcontrol.rs.next())
             {
                 int topic_id = DBcontrol.rs.getInt("tid");
                 String topic_name = DBcontrol.rs.getString("tname");
-                System.out.println((++topic_num)+". "+topic_name);
+                System.out.println((++no)+"."+topic_name);
                 list.add(topic_id);
             }
+            System.out.println(++no+".back");
             return true;
         }catch(Throwable oops){
             oops.printStackTrace();
@@ -107,9 +112,12 @@ class Course {
                 int retrynum = DBcontrol.rs.getInt("retrynum");
                 int point = DBcontrol.rs.getInt("point");
                 int penalty = DBcontrol.rs.getInt("penalty");
+                //String start_date = DBcontrol.rs.getString("hwstart");
+                //String end_date = DBcontrol.rs.getString("hwend");
                 String ssmethod = DBcontrol.rs.getString("ssmethod");
                 System.out.println(hwnum+".HW "+hwid+" "+hwtitle);
                 Homework hw = new Homework(hwid,this.mid,this.token,qnum,retrynum,point,penalty,ssmethod,0,1);
+                //hw.setDate(start_date, end_date);
                 hwlist.add(hw);
             }
             System.out.println((hwnum+1)+".back");
@@ -137,6 +145,7 @@ class Course {
                 int retrynum = DBcontrol.rs.getInt("retrynum");
                 int attnum = DBcontrol.rs.getInt("attnum");
                 int seed = DBcontrol.rs.getInt("seed");
+                Date start_date = DBcontrol.rs.getDate("hwstart");
                 Date end_date = DBcontrol.rs.getDate("hwend");
                 int point = DBcontrol.rs.getInt("point");
                 int penalty = DBcontrol.rs.getInt("penalty");
@@ -146,6 +155,7 @@ class Course {
                 else
                     System.out.println(hwnum+".HW "+hwid+" "+hwtitle+"      "+attnum+"-attempt.Already due");
                 Homework hw = new Homework(hwid,this.mid,this.token,qnum,retrynum,point,penalty,ssmethod,seed,attnum);
+                hw.setDate(Util.date_format.format(start_date), Util.date_format.format(end_date));
                 hwlist.add(hw);
             }
             System.out.println((hwnum+1)+".back");
@@ -183,6 +193,12 @@ class Course {
         return false;
     }
 
-
+    void linkTopic(int tid)
+    {
+        if(DBcontrol.update("insert into c_topic values ('"+this.token+"',"+tid+")"))
+            System.out.println("Add topic successfully");
+        else
+            System.out.println("Topic already linked, please choose another topic");
+    }
 
 }

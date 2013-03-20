@@ -49,6 +49,12 @@ class Homework{
         this.score = score;
     }
 
+    void setDate(String start_date, String end_date)
+    {
+        this.start_date = start_date;
+        this.end_date = end_date;
+    }
+
     static int getid(String token)
     {
         try{
@@ -233,6 +239,8 @@ class Homework{
     {
         getQlist();
         getStuAns();
+        Date end_date =null;
+        end_date=Util.parseDate(this.end_date);
 
         int seed = this.seed;
         Util.randomlist(seed,qlist);
@@ -248,12 +256,18 @@ class Homework{
             {
                 if(select==rindex)
                 {
-                    System.out.println((select+1)+"."+q.canslist.get(0).anscontent+"\tCorrect answer");
+                    if(end_date.before(new Date()))
+                        System.out.println((select+1)+"."+q.canslist.get(0).anscontent+"\tCorrect answer: "+q.canslist.get(0).shortexp);
+                    else
+                        System.out.println((select+1)+"."+q.canslist.get(0).anscontent);
                     record[select++]=q.canslist.get(0).ansid;
                 }
                 else
                 {
-                    System.out.println((select+1)+"."+q.incanslist.get(incnum).anscontent);
+                    if(end_date.before(new Date()))
+                        System.out.println((select+1)+"."+q.incanslist.get(incnum).anscontent+"\t"+q.incanslist.get(incnum).shortexp);
+                    else
+                        System.out.println((select+1)+"."+q.incanslist.get(incnum).anscontent);
                     record[select++]=q.incanslist.get(incnum++).ansid;
                 }
             }
@@ -266,7 +280,7 @@ class Homework{
             {
                 System.out.println("Yours result: False");
             }
-            System.out.println("Explaination: "+q.longexp);
+            System.out.println("Explaination: "+q.longexp+"\n");
             }catch(NullPointerException e){System.out.println(ans.size());}
         }
         return true;
@@ -363,16 +377,32 @@ class Homework{
     }
     public void calculateScore(int curattnum)
     {
-        float score=0;
-        DBcontrol.query("select rscore from report where token='"+this.token+"' and hwid="+this.hwid+" and mid='"+this.mid+"'");
+        float score=0, maxscore=0, lastscore=0, firstscore=0;
+        int num=0;
+        DBcontrol.query("select rscore from report where token='"+this.token+"' and hwid="+this.hwid+" and mid='"+this.mid+"' order by rtime");
         try{
+            float temp=0;
             while(DBcontrol.rs.next())
             {
-                score = score + DBcontrol.rs.getFloat("rscore");
+                temp = DBcontrol.rs.getFloat("rscore");
+                maxscore = maxscore>temp?maxscore:temp;
+                score = score + temp;
+                num++;
+                if(num==1)
+                    firstscore=temp;
             }
+            lastscore=temp;
         }catch(Throwable oops){
             System.out.println("ERROR");
         }
+        if(ssmethod.equals("avg"))
+            score = score/num;
+        else if(ssmethod.equals("max"))
+            score = maxscore;
+        else if(ssmethod.equals("last"))
+            score = lastscore;
+        else if(ssmethod.equals("first"))
+            score = firstscore;
         DBcontrol.update("update hw_mem set hwscore="+score+",totalatt="+curattnum+" where token='"+this.token+"' and hwid="+this.hwid+" and mid='"+this.mid+"'");
     }
 
