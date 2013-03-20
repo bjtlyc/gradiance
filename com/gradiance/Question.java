@@ -9,6 +9,7 @@ class Question{
     public int tid;
     public int qid;
     public String content;
+    public String longexp;
     public static int maxqid;
     public static int maxansid;
     static{
@@ -36,10 +37,11 @@ class Question{
     {
         this.tid = tid;
     }
-    Question(int qid,String content)
+    Question(int qid,String content,String longexp)
     {
         this.qid = qid;
         this.content = content;
+        this.longexp = longexp;
     }
     void add()
     {

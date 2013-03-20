@@ -18,6 +18,10 @@ class Course {
     public static ArrayList<Question> cqlist = new ArrayList<Question>();
 
     Course(){}
+    Course(String token)
+    {
+        this.token = token;
+    }
     Course(String cid,String token,String cname,String mid)
     {
         this.cid = cid;
@@ -105,7 +109,7 @@ class Course {
                 int penalty = DBcontrol.rs.getInt("penalty");
                 String ssmethod = DBcontrol.rs.getString("ssmethod");
                 System.out.println(hwnum+".HW "+hwid+" "+hwtitle);
-                Homework hw = new Homework(hwid,this.mid,this.token,qnum,retrynum,point,penalty,ssmethod);
+                Homework hw = new Homework(hwid,this.mid,this.token,qnum,retrynum,point,penalty,ssmethod,0,1);
                 hwlist.add(hw);
             }
             System.out.println((hwnum+1)+".back");
@@ -132,6 +136,7 @@ class Course {
                 int qnum = DBcontrol.rs.getInt("qnum");
                 int retrynum = DBcontrol.rs.getInt("retrynum");
                 int attnum = DBcontrol.rs.getInt("attnum");
+                int seed = DBcontrol.rs.getInt("seed");
                 Date end_date = DBcontrol.rs.getDate("hwend");
                 int point = DBcontrol.rs.getInt("point");
                 int penalty = DBcontrol.rs.getInt("penalty");
@@ -140,7 +145,7 @@ class Course {
                     System.out.println(hwnum+".HW "+hwid+" "+hwtitle+"      "+attnum+"-attempt");
                 else
                     System.out.println(hwnum+".HW "+hwid+" "+hwtitle+"      "+attnum+"-attempt.Already due");
-                Homework hw = new Homework(hwid,this.mid,this.token,qnum,retrynum,point,penalty,ssmethod);
+                Homework hw = new Homework(hwid,this.mid,this.token,qnum,retrynum,point,penalty,ssmethod,seed,attnum);
                 hwlist.add(hw);
             }
             System.out.println((hwnum+1)+".back");
@@ -163,8 +168,9 @@ class Course {
                 qnum++;
                 int qid = DBcontrol.rs.getInt("qid");
                 String qcontent = DBcontrol.rs.getString("qcontent");
+                String longexp = DBcontrol.rs.getString("longexp");
                 System.out.println(qnum+".Q"+qid+"\t"+qcontent);
-                Question q = new Question(qid,qcontent);
+                Question q = new Question(qid,qcontent,longexp);
                 cqlist.add(q);
             }
             System.out.println((qnum+1)+".back");

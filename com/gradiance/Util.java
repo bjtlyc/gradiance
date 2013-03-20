@@ -47,4 +47,16 @@ class Util{
         }
         return sc.nextFloat();
     }
+
+    static void randomlist(int seed, ArrayList<Question> qlist)
+    {
+        for(int i=0;i<qlist.size();i++)
+        {
+            Question q = qlist.get(0);
+            while(q.canslist.size()>1)
+                q.canslist.remove(seed%(q.canslist.size()));
+            while(q.incanslist.size()>3)
+                q.incanslist.remove(seed%(q.incanslist.size()));
+        }
+    }
 }

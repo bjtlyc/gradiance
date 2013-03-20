@@ -69,6 +69,7 @@ public class DBcontrol {
             return true;
         }catch(Throwable oops){
             oops.printStackTrace();
+            System.err.println("ERRER");
             return false;
         }
     }

@@ -31,8 +31,6 @@ public class StartPanel
                     System.exit(0);
                     break;
                 default:
-                    DBcontrol.close(DBcontrol.stmt);
-                    DBcontrol.close(DBcontrol.rs);
                     System.err.println("invalid input");
                     break;
             }
@@ -79,7 +77,7 @@ public class StartPanel
             System.err.println("no console");
             System.exit(0);
         }
-        String userid = c.readLine("Please enter your login id"); 
+        String userid = c.readLine("Please enter your login id: "); 
         String username = c.readLine("Enter your full name: ");
         char [] password  = c.readPassword("Enter your password: ");
         String pwd = new String(password);

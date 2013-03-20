@@ -11,7 +11,9 @@ class Homework{
     public String start_date;
     public String end_date;
     public int score;
+    public int seed;
     public int retrynum;
+    public int attnum;
     public String ssmethod;//first,last,max,avg
     public int qnum;
     public int point;
@@ -26,7 +28,7 @@ class Homework{
         this.start_date = start_date;
         this.end_date = end_date;
     }
-    Homework(int hwid,String mid,String token,int qnum,int retrynum,int point,int penalty,String ssmethod)
+    Homework(int hwid,String mid,String token,int qnum,int retrynum,int point,int penalty,String ssmethod,int seed,int attnum)
     {
         this.hwid = hwid;
         this.mid = mid;
@@ -36,6 +38,8 @@ class Homework{
         this.point = point;
         this.penalty = penalty;
         this.ssmethod = ssmethod;
+        this.seed = seed;
+        this.attnum = attnum;
     }
     Homework(int hwid,String token, int score)
     {
@@ -58,7 +62,7 @@ class Homework{
 
     boolean edit()
     {
-        int choice = Util.inputInt("Choose what to update:\n1.Start date\n2.End date\n3.Number of attempts\n4.Score selection\n5.Question numbers");
+        int choice = Util.inputInt("Choose what to update:\n1.Start date\n2.End date\n3.Number of attempts\n4.Score selection\n5.Question numbers\n6.Correct answer points\n7.Incorrect answer points\n8.Assign questions\n9.back");
         switch(choice)
         {
             case 1:
@@ -141,13 +145,14 @@ class Homework{
                 DBcontrol.update("update homework set penalty="+penalty+" where hwid="+this.hwid+" and token='"+this.token+"'");
                 return false;
             case 8:
-                break;
+                while(addQuetoHw())
+                    continue;
+                return false;
             case 9:
                 return false;
             default:
                 return true;
         }
-        return true;
     }
 
     boolean doHomework()
@@ -159,9 +164,7 @@ class Homework{
             if(DBcontrol.rs.next())
             {
                 curattnum = DBcontrol.rs.getInt("max(attnum)");
-                System.out.println("before: "+ curattnum);
-                curattnum = DBcontrol.rs.getInt("max(attnum)");
-                System.out.println("before: "+ curattnum);
+                System.out.println(retrynum+"before: "+ curattnum);
                 if(curattnum >= retrynum)
                 {
                     System.out.println("already reach sumbit limit");
@@ -174,6 +177,98 @@ class Homework{
             System.out.println("Error");
         }
         curattnum++;
+
+        getQlist();
+
+        int seed = Util.rg.nextInt(500);
+        Util.randomlist(seed,qlist);
+        int rindex=seed % 4;
+        int [] record = new int[4];
+        int truenum=0,falsenum=0,i=0;
+        while(!qlist.isEmpty())
+        {
+            Question q = qlist.remove(seed%(qlist.size()));
+            System.out.println(q.content);
+            int select = 0, incnum=0;
+            while(select < 4)
+            {
+                if(select==rindex)
+                {
+                    System.out.println((select+1)+"."+q.canslist.get(0).anscontent);
+                    record[select++]=q.canslist.get(0).ansid;
+                }
+                else
+                {
+                    System.out.println((select+1)+"."+q.incanslist.get(incnum).anscontent);
+                    record[select++]=q.incanslist.get(incnum++).ansid;
+                }
+            }
+            int choice = Util.inputInt("select your answer");
+            String text = Util.c.readLine("enter some explaination: ");
+            if(choice == rindex+1)
+            {
+                truenum++;
+                System.out.println("True");
+            }
+            else
+            {
+                falsenum++;
+                System.out.println("False");
+            }
+            DBcontrol.update("insert into stuans values ('"+this.token+"',"+this.hwid+",'"+this.mid+"',"+curattnum+","+q.qid+","+record[choice-1]+",'"+text+"')");
+        }
+
+        String currdate = Util.date_format.format(new Date()); 
+        int score = truenum*point + falsenum*penalty;
+        DBcontrol.update("insert into report values ('"+this.token+"',"+this.hwid+",'"+this.mid+"',"+curattnum+","+seed+","+score+",'"+currdate+"')");
+        return true;
+    }
+
+    boolean showReport()
+    {
+        getQlist();
+        HashMap<Integer,String> ans=new HashMap<Integer,String>();
+        getStuAns(ans);
+
+        int seed = this.seed;
+        Util.randomlist(seed,qlist);
+        int rindex=seed % 4;
+        int [] record = new int[4];
+        int truenum=0,falsenum=0,i=0;
+        while(!qlist.isEmpty())
+        {
+            Question q = qlist.remove(seed%(qlist.size()));
+            System.out.println(q.content);
+            int select = 0, incnum=0;
+            while(select < 4)
+            {
+                if(select==rindex)
+                {
+                    System.out.println((select+1)+"."+q.canslist.get(0).anscontent+"\tCorrect answer");
+                    record[select++]=q.canslist.get(0).ansid;
+                }
+                else
+                {
+                    System.out.println((select+1)+"."+q.incanslist.get(incnum).anscontent);
+                    record[select++]=q.incanslist.get(incnum++).ansid;
+                }
+            }
+            if(ans.get((Integer)q.qid).equals("T")) 
+            {
+                System.out.println("Your result: True");
+            }
+            else
+            {
+                System.out.println("Yours result: False");
+            }
+            System.out.println("Explaination: "+q.longexp);
+        }
+        return true;
+    }
+
+    void getQlist()
+    {
+        qlist.clear();
         String qq = "select * from homework h,hw_ques hq,question q where h.hwid=hq.hwid and hq.qid=q.qid and h.token=hq.token and h.token='"+this.token+"' and h.hwid="+hwid;
         System.out.println(qq);
         DBcontrol.query(qq);
@@ -182,7 +277,8 @@ class Homework{
             {
                 int qid = DBcontrol.rs.getInt("QID");
                 String content = DBcontrol.rs.getString("qcontent");
-                Question q = new Question(qid,content);
+                String longexp = DBcontrol.rs.getString("longexp");
+                Question q = new Question(qid,content,longexp);
                 qlist.add(q);
             }
         }catch(Throwable oops){
@@ -214,62 +310,50 @@ class Homework{
             }
         }
 
-        int seed = Util.rg.nextInt(qlist.size());
-        int seed1 = seed;
-        int seed2 = seed;
-        int [] record = new int[4];
-        int truenum=0,falsenum=0,i=0;
-        while(!qlist.isEmpty())
-        {
-            int rindex=0;
-            Question q = qlist.remove(seed1);
-            System.out.println(q.content);
-            int select = 0;
-            if(seed2 >= 4)
-                seed2 = seed2 % 4;
-            while(select < 4)
+    }
+
+    public void getStuAns(HashMap<Integer,String> ans)
+    {
+        DBcontrol.query("select a.qid,b.TorF from stuans a,answer b where a.token='"+this.token+"' and a.hwid="+this.hwid+" and a.attnum="+this.attnum+" and a.mid='"+this.mid+"' and a.qid=b.qid and a.ansid=b.ansid");
+        try{
+
+            while(DBcontrol.rs.next())
             {
-                if(seed2==0)
-                {
-                    System.out.println((select+1)+"."+q.canslist.get(0).anscontent);
-                    rindex=select+1;
-                    seed2=3;
-                    record[select++]=0;
-                }
-                else
-                {
-                    System.out.println((select+1)+"."+q.incanslist.get(seed2).anscontent);
-                    seed2--;
-                    record[select++]=seed2;
-                }
+                int qid = DBcontrol.rs.getInt("qid");
+                String torf = DBcontrol.rs.getString("TorF");
+                ans.put(new Integer(qid),torf);
             }
-            int choice = Util.inputInt("select your answer");
-            String text = Util.c.readLine("enter some explaination");
-            if(choice == rindex)
+        }catch(Throwable oops){
+            oops.printStackTrace();
+        }
+    }
+    public boolean addQuetoHw()
+    {
+        Course course = new Course(this.token);
+        if(course.showQuestion())
+        {
+            int choice = Util.inputInt("");
+            if(choice == course.cqlist.size()+1 )
+                return false;
+            else if(choice > course.cqlist.size() || choice < 1)
             {
-                truenum++;
-                DBcontrol.update("insert into stuans values ('"+this.token+"',"+this.hwid+",'"+this.mid+"',"+curattnum+","+q.qid+","+q.canslist.get(0).ansid+",'"+text+"')");
-                System.out.println("True");
+                System.out.println("Invalid choice");
+                return true;
             }
             else
             {
-                falsenum++;
-                DBcontrol.update("insert into stuans values ('"+this.token+"',"+this.hwid+",'"+this.mid+"',"+curattnum+","+q.qid+","+q.incanslist.get(record[choice-1]).ansid+",'"+text+"')");
-                System.out.println("False");
+                Question q = course.cqlist.get(choice-1);
+                Homework hw = course.hwlist.get(choice-1);
+                if(DBcontrol.update("insert into hw_ques values('"+this.token+"',"+this.hwid+","+q.qid+")"))
+                    System.out.println("Assign question successfully");
+                else
+                    System.out.println("The question has been assigned, choose another one");
             }
-            if(seed1>=qlist.size())
-                seed1--;
-            i++;
         }
-        String currdate = Util.date_format.format(new Date()); 
-        int score = truenum*point + falsenum*penalty;
-        DBcontrol.update("insert into report values ('"+this.token+"',"+this.hwid+",'"+this.mid+"',"+curattnum+","+seed+","+score+",'"+currdate+"')");
-        return true;
+        else
+            System.out.println("There is no Question");
+        return false;
     }
 
-    boolean showReport()
-    {
-        return true;
-    }
 
 }
