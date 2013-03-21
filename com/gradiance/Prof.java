@@ -3,15 +3,15 @@ import java.io.*;
 import java.util.*;
 
 
-class Prof extends User{
+class Prof extends Manager{
     Prof(){}
-    Prof(String mid, String name,int role)
+    Prof(String mid, String name)
     {
-        super(mid,name,role);
+        super(mid,name);
     }
     boolean aboutCourse(Course course)
     {
-       int choice = Util.inputInt("For "+course.cid+":\n1.Add homework\n2.Edit Homework\n3.Add question\n4.Add answer\n5.Reports\n6.Add topic\n7.Back");
+       int choice = Util.inputInt("For "+course.cid+":\n1.Add homework\n2.Edit Homework\n3.Add question\n4.Add answer\n5.Reports\n6.Add topic\n7.Show Student\n8.Assigan a Ta\n9.Back");
        switch(choice)
        {
            case 1:
@@ -39,6 +39,12 @@ class Prof extends User{
                    continue;
                break;
            case 7:
+               while(showStudent(course))
+                   continue;
+           case 8:
+               while(assignTa(course))
+                   continue;
+           case 9:
                return false;
            default:
                return true;
@@ -75,7 +81,7 @@ class Prof extends User{
             return true;
         }
         try{
-                Course course = new Course(cid,course_token,cname,mid);
+                Course course = new Course(cid,course_token,cname);
                 String u = "insert into course values ('"+cid+"','"+course_token+"','"+cname+"','"+start_date_str+"','"+end_date_str+"','"+this.mid+"')";
                 DBcontrol.update(u);
                 while(aboutCourse(course))
@@ -85,87 +91,6 @@ class Prof extends User{
             System.out.println("Error when add course");
             return true;
         }
-    }
-
-    boolean addHomework(Course course)
-    {
-        int hwid = Homework.getid(course.token); 
-        System.out.println(hwid);
-        String hwtitle = Util.c.readLine("Please enter the title for the homework: ");
-        String start_date_str=null,end_date_str=null;
-        while(true)
-        {
-            Date start_date=null,end_date=null;
-            while(start_date==null)
-            {
-                start_date_str = Util.c.readLine("Please enter the start date(in the format of dd-MMM-yy): ");
-                start_date = Util.parseDate(start_date_str);
-            }
-            while(end_date==null)
-            {
-                end_date_str = Util.c.readLine("Please enter the end date(in the format of dd-MMM-yy): ");
-                end_date = Util.parseDate(end_date_str);
-            }
-            if(start_date.after(end_date))
-            {
-                System.out.println("The date is invalid");
-                continue;
-            }
-            else
-                break;
-        }
-        int attemptnum=Util.inputInt("Please enter the number of attempts allowed: ");
-        String ssmethod =Util.c.readLine("Please enter the score selection way(in word): \n1.first\n2.last\n3.max\n4.avg\n");
-        int qnum=Util.inputInt("Please enter the number of questions: ");
-        int r_ans_p=Util.inputInt("Please enter the points for right answer: ");
-        int w_ans_p=Util.inputInt("Please enter the points for wrong answer: ");
-        try{
-            String u = "insert into homework values ('"+course.token+"',"+hwid+",'"+hwtitle+"',"+qnum+","+attemptnum+",'"+start_date_str+"','"+end_date_str+"',"+r_ans_p+","+w_ans_p+",'"+ssmethod+"')";
-                if(!DBcontrol.update(u))
-                    return false;
-                else
-                {
-                    System.out.println("Add a new homework successfully.");
-                    ArrayList<String> temp=new ArrayList<String>();
-                    DBcontrol.query("select mid from enroll where token='"+course.token+"'");
-                    try{
-                        while(DBcontrol.rs.next())
-                            temp.add(DBcontrol.rs.getString("mid"));
-                    }catch(Throwable oops){}
-                    for(int i=0;i<temp.size();i++)
-                    {
-                        DBcontrol.update("insert into hw_mem values('"+course.token+"',"+hwid+",'"+temp.get(i)+"',0,0)");
-                    }
-                }
-                //while(aboutHomework(hw))
-                //    continue;
-                return false;
-        }catch(Throwable oops){
-            System.out.println("Error when add Homework");
-            return true;
-        }
-    }
-
-    boolean editHomework(Course course)
-    {
-        if(course.showHomework(1))
-        {
-            int choice = Util.inputInt("");
-            if(choice == course.hwnum+1 )
-                return false;
-            else if(choice > course.hwnum || choice < 1)
-            {
-                System.out.println("Invalid choice");
-                return true;
-            }
-            else
-            {
-                Homework hw = course.hwlist.get(choice-1);
-                while(hw.edit())
-                    continue;
-            }                
-        }
-        return false;
     }
 
     boolean addQuestion(Course course)
@@ -258,11 +183,52 @@ class Prof extends User{
             System.out.println("There is no topic");
         return false;
     }
-
-    boolean showStudent()
+    boolean assignTa(Course course)
     {
-        DBcontrol.query("select * from enroll e,student s where e.");
-        return false;
+        System.out.println("1.Enter a student id to assign a Ta\n2.Back");
+        int choice = Util.inputInt("");
+        switch(choice)
+        {
+            case 1:
+                String taid = Util.c.readLine("Please enter a student id to assign a ta: ");
+                DBcontrol.query("select * from member where mid='"+taid+"'");
+                try{
+                    if(DBcontrol.rs.next())
+                    {
+                        DBcontrol.query("select role from enroll where mid='"+taid+"' and token='"+course.token+"'");
+                        if(DBcontrol.rs.next())
+                        {
+                            String ifta = DBcontrol.rs.getString("role");
+                            if(ifta.equals("stud"))
+                            {
+                                System.out.println("This student has enrolled "+course.token+" and cannot be a Ta");
+                                return true;
+                            }
+                            else if(ifta.equals("ta"))
+                            {
+                                System.out.println("This student has been assigned a Ta");
+                                return true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        System.out.println("Invalid Student id");
+                        return true;
+                    }
+                }catch(Throwable oops){
+                    System.out.println("Error");
+                }
+                if(DBcontrol.update("update enroll set role='ta' where mid='"+taid+"'"))
+                    System.out.println("Assign Ta successfully");
+                else
+                    System.out.println("Error");
+                return false;
+            case 2:
+                return false;
+            default:
+                return true;
+        }
     }
 
 }

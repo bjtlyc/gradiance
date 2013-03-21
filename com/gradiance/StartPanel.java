@@ -49,6 +49,7 @@ public class StartPanel
                     role = DBcontrol.rs.getInt("faculty");
                     //user = new User(Long.parseLong(user_id),name,major,role);
                     user = UserFactory.createUser(user_id,name,role);
+                    user.setRole(role);
                 }catch(Throwable oops){
                     oops.printStackTrace();
                 }
@@ -80,7 +81,7 @@ public class StartPanel
             System.out.println("create user error, the id is used");
             return ;
         }
-        User user = new Student(userid,username,0);
+        User user = new Student(userid,username);
         System.out.println("Create User Successfully, welcome "+username);
         while(user.doSomething())
             continue;

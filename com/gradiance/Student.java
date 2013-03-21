@@ -6,9 +6,9 @@ import java.text.*;
 class Student extends User{
 
     Student(){}
-    Student(String userid, String name, int role)
+    Student(String userid, String name)
     {
-        super(userid,name,role);
+        super(userid,name);
     }
     
     boolean addCourse()
@@ -22,7 +22,7 @@ class Student extends User{
                 String cid = DBcontrol.rs.getString("cid");
                 String token = DBcontrol.rs.getString("token");
                 String cname = DBcontrol.rs.getString("cname");
-                Course course = new Course(cid,token,cname,this.mid);
+                Course course = new Course(cid,token,cname);
                 String u = "insert into enroll values ('"+this.mid+"','"+course_token+"','stud')";
                 DBcontrol.update(u);
                 System.out.println("Enroll successfully");
@@ -47,7 +47,7 @@ class Student extends User{
        switch(choice)
        {
            case 1:
-               while(viewScore(course))
+               while(course.viewScore(0,this.mid))
                    continue;
                break;
            case 2:
@@ -55,7 +55,7 @@ class Student extends User{
                    continue;
                break;
            case 3:
-               while(viewPastSubmit(course))
+               while(course.viewPastSubmit(0,this.mid))
                    continue;
                break;
            case 4:
@@ -66,55 +66,9 @@ class Student extends User{
        return true;
    }
 
-    boolean viewScore(Course course)
-    {
-        if(course.showHomework(0))
-        {
-            int choice = Util.inputInt("");
-            if(choice == course.hwlist.size()+1)
-                return false;
-            if(choice > course.hwlist.size()+1 || choice <0)
-            {
-                System.out.println("Invalid Choice, please enter another number");
-                return true;
-            }
-            else
-            {
-                Homework temp = course.hwlist.get(choice-1);
-                System.out.println("Score: "+temp.score+"\n");
-            }
-        }
-        else
-            System.out.println("You don't have homework attemp");
-        return true;
-    }
-
-    boolean viewPastSubmit(Course course)
-    {
-        if(course.showPastHomework())
-        {
-            int choice = Util.inputInt("");
-            if(choice == course.hwlist.size()+1)
-                return false;
-            else if(choice > course.hwlist.size()+1 || choice <0)
-            {
-                System.out.println("Invalid Choice, please enter another number");
-                return true;
-            }
-            else
-            {
-                Homework temp = course.hwlist.get(choice-1);
-                temp.showReport();
-            }
-        }
-        else
-            System.out.println("You don't have homework attemp");
-        return false;
-    }
-
     boolean attemptHomework(Course course)
     {
-        if(course.showOpenHomework())
+        if(course.showOpenHomework(this.mid))
         {
             int choice = Util.inputInt("");
             if(choice == course.hwlist.size()+1)

@@ -19,7 +19,7 @@ class Homework{
     public int point;
     public int penalty;
     public ArrayList<Question> qlist = new ArrayList<Question>();
-    public HashMap<Integer,String> ans=new HashMap<Integer,String>();
+    public HashMap<Integer,Integer> ans=new HashMap<Integer,Integer>();
 
     Homework(){}
     Homework(int hwid,String token, String start_date,String end_date)
@@ -235,7 +235,7 @@ class Homework{
 
     }
 
-    boolean showReport()
+    boolean showReport(int role)
     {
         getQlist();
         getStuAns();
@@ -247,6 +247,7 @@ class Homework{
         int rindex=seed % 4;
         int [] record = new int[4];
         int truenum=0,falsenum=0,i=0;
+        int yourchoice=0;
         while(!qlist.isEmpty())
         {
             Question q = qlist.remove(seed%(qlist.size()));
@@ -256,32 +257,26 @@ class Homework{
             {
                 if(select==rindex)
                 {
-                    if(end_date.before(new Date()))
-                        System.out.println((select+1)+"."+q.canslist.get(0).anscontent+"\tCorrect answer: "+q.canslist.get(0).shortexp);
-                    else
-                        System.out.println((select+1)+"."+q.canslist.get(0).anscontent);
+                     System.out.println((select+1)+"."+q.canslist.get(0).anscontent+"\tCorrect answer: "+q.canslist.get(0).shortexp);
+                        //System.out.println((select+1)+"."+q.canslist.get(0).anscontent);
+                    if(ans.get((Integer)q.qid) == q.canslist.get(0).ansid) 
+                        yourchoice = select;
                     record[select++]=q.canslist.get(0).ansid;
                 }
                 else
                 {
-                    if(end_date.before(new Date()))
-                        System.out.println((select+1)+"."+q.incanslist.get(incnum).anscontent+"\t"+q.incanslist.get(incnum).shortexp);
-                    else
-                        System.out.println((select+1)+"."+q.incanslist.get(incnum).anscontent);
+                    System.out.println((select+1)+"."+q.incanslist.get(incnum).anscontent+"\t"+q.incanslist.get(incnum).shortexp);
+                        //System.out.println((select+1)+"."+q.incanslist.get(incnum).anscontent);
+                    try{
+                    if(ans.get((Integer)q.qid) == q.incanslist.get(incnum).ansid) 
+                        yourchoice = select;
                     record[select++]=q.incanslist.get(incnum++).ansid;
+                    }catch(NullPointerException e){System.out.println(ans.size());}
                 }
             }
-            try{
-            if(ans.get((Integer)q.qid).equals("T")) 
-            {
-                System.out.println("Your result: True");
-            }
-            else
-            {
-                System.out.println("Yours result: False");
-            }
-            System.out.println("Explaination: "+q.longexp+"\n");
-            }catch(NullPointerException e){System.out.println(ans.size());}
+            System.out.println("Your choice: "+yourchoice+"\tCorrect Answer: "+(rindex+1));
+            if(role == 1 || end_date.before(new Date()))
+                System.out.println("Explaination: "+q.longexp+"\n");
         }
         return true;
     }
@@ -335,14 +330,14 @@ class Homework{
     public void getStuAns()
     {
         ans.clear();
-        DBcontrol.query("select a.qid,b.TorF from stuans a,answer b where a.token='"+this.token+"' and a.hwid="+this.hwid+" and a.attnum="+this.attnum+" and a.mid='"+this.mid+"' and a.qid=b.qid and a.ansid=b.ansid");
+        DBcontrol.query("select a.qid,a.ansid,b.TorF from stuans a,answer b where a.token='"+this.token+"' and a.hwid="+this.hwid+" and a.attnum="+this.attnum+" and a.mid='"+this.mid+"' and a.qid=b.qid and a.ansid=b.ansid");
         try{
-
             while(DBcontrol.rs.next())
             {
                 int qid = DBcontrol.rs.getInt("qid");
+                int ansid = DBcontrol.rs.getInt("ansid");
                 String torf = DBcontrol.rs.getString("TorF");
-                ans.put(new Integer(qid),torf);
+                ans.put(new Integer(qid),ansid);
             }
         }catch(Throwable oops){
             oops.printStackTrace();

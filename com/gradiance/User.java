@@ -14,11 +14,10 @@ abstract class User {
     public HashMap<Integer,Course> clist = new HashMap<Integer,Course>(); 
 
     User(){}
-    User(String mid,String name,int role)
+    User(String mid,String name)
     {
         this.mid = mid;
         this.name = name;
-        this.role = role;
     }
     static void init()
     {
@@ -72,7 +71,7 @@ abstract class User {
                 String cid = DBcontrol.rs.getString("cid").toUpperCase();
                 String token = DBcontrol.rs.getString("token").toUpperCase();
                 String cname = DBcontrol.rs.getString("cname");
-                Course course = new Course(cid,token,cname,mid);
+                Course course = new Course(cid,token,cname);
                 clist.put(coursenum++,course);
                 //System.out.print(cid+cname);
             }
@@ -100,7 +99,7 @@ abstract class User {
                     }
                     if(ifta.equals("ta"))
                     {
-                        Prof ta = new Prof(mid,name,1);
+                        Manager ta = new Manager(mid,name);
                         while(ta.aboutCourse(course))
                             continue;
                         return true; 
@@ -132,6 +131,10 @@ abstract class User {
             System.out.println(i+"."+clist.get(i).token+" "+clist.get(i).cname);
         System.out.println((clist.size()+1)+".Back");
         return true; 
+    }
+    void setRole(int role)
+    {
+        this.role = role;
     }
     boolean addCourse(){return true;}        //Course course = new Course()
     boolean aboutCourse(Course course){return true;}
