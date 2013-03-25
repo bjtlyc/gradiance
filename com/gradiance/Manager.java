@@ -11,7 +11,7 @@ class Manager extends User{
     }
     boolean aboutCourse(Course course)
     {
-       int choice = Util.inputInt("For "+course.cid+":\n1.Add homework\n2.Edit Homework\n3.Reports\n4.Show Student\n5.Back");
+       int choice = Util.inputInt("For "+course.cid+":\n1.Add Homework\n2.Edit Homework\n3.Reports\n4.Show Student\n5.Back");
        switch(choice)
        {
            case 1:
@@ -22,14 +22,14 @@ class Manager extends User{
                while(editHomework(course))
                    continue;
                break;
-           case 3:
+           case 4:
                while(report(course))
                    continue;
                break;
-           case 4:
+           case 5:
                while(showStudent(course))
                    continue;
-           case 5:
+           case 6:
                return false;
            default:
                return true;
@@ -114,6 +114,7 @@ class Manager extends User{
                 Homework hw = course.hwlist.get(choice-1);
                 while(hw.edit())
                     continue;
+                return true;
             }                
         }
         return false;

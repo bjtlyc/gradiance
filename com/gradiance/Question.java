@@ -90,4 +90,20 @@ class Question{
 
     }
 
+    void showAnswer()
+    {
+        System.out.println("Correct Answer");
+        for(int i=0;i<canslist.size();i++)
+        {
+            System.out.println((i+1)+"."+canslist.get(i).anscontent + "("+canslist.get(i).shortexp+")");
+        }
+        System.out.println("Incorrect Answer");
+        for(int i=0;i<incanslist.size();i++)
+        {
+            System.out.println((i+1)+"."+incanslist.get(i).anscontent + "("+incanslist.get(i).shortexp+")");
+        }
+        
+
+    }
+
 }

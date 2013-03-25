@@ -36,7 +36,7 @@ class Course {
         System.out.println("Please select a homework\nHomework_number | Attempt_number");
         String s=null;
         if(role == 1)
-            s = "select * from homework where token='"+this.token.toUpperCase()+"'";
+            s = "select * from homework where token='"+this.token.toUpperCase()+"' order by hwid";
         else if(role == 0)
             s = "select * from report where token='"+this.token.toUpperCase()+"' and mid ='"+mid+"'"; 
         try{
@@ -167,6 +167,7 @@ class Course {
         System.out.println("there is no open course about this course");
         return false;
     }
+    //show questions from question pool  whose topic is related to the topic relavent to the course; 
     boolean showQuestion()
     {
         cqlist.clear();
@@ -192,7 +193,7 @@ class Course {
         System.out.println("there is no question about this course");
         return false;
     }
-
+    //add new topic to the course
     void linkTopic(int tid)
     {
         if(DBcontrol.update("insert into c_topic values ('"+this.token+"',"+tid+")"))

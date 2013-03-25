@@ -11,7 +11,7 @@ class Prof extends Manager{
     }
     boolean aboutCourse(Course course)
     {
-       int choice = Util.inputInt("For "+course.cid+":\n1.Add homework\n2.Edit Homework\n3.Add question\n4.Add answer\n5.Reports\n6.Add topic\n7.Show Student\n8.Assigan a Ta\n9.Back");
+       int choice = Util.inputInt("For "+course.cid+":\n1.Add homework\n2.Edit Homework\n3.Delete Homework\n4.Add question\n5.Add answer\n6.Reports\n7.Add topic\n8.Show Student\n9.Assigan a Ta\n10.Back");
        switch(choice)
        {
            case 1:
@@ -23,28 +23,32 @@ class Prof extends Manager{
                    continue;
                break;
            case 3:
-               while(addQuestion(course))
+               while(delHomework(course))
                    continue;
                break;
            case 4:
-               while(addAnswer(course))
+               while(addQuestion(course))
                    continue;
                break;
            case 5:
-               while(report(course))
+               while(addAnswer(course))
                    continue;
                break;
            case 6:
-               while(addTopic(course))
+               while(report(course))
                    continue;
                break;
            case 7:
+               while(addTopic(course))
+                   continue;
+               break;
+           case 8:
                while(showStudent(course))
                    continue;
-           case 8:
+           case 9:
                while(assignTa(course))
                    continue;
-           case 9:
+           case 10:
                return false;
            default:
                return true;
@@ -52,6 +56,28 @@ class Prof extends Manager{
        return true;
     }
 
+    boolean delHomework(Course course)
+    {
+        if(course.showHomework(1,this.mid))
+        {
+            int choice = Util.inputInt("");
+            if(choice == course.hwnum+1 )
+                return false;
+            else if(choice > course.hwnum || choice < 1)
+            {
+                System.out.println("Invalid choice");
+                return true;
+            }
+            else
+            {
+                Homework hw = course.hwlist.get(choice-1);
+                while(hw.delete())
+                    continue;
+            }                
+        }
+        return false;
+    }
+    
     boolean addCourse()
     {
         Console c = System.console();

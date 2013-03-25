@@ -69,7 +69,7 @@ class Homework{
 
     boolean edit()
     {
-        int choice = Util.inputInt("Choose what to update:\n1.Start date\n2.End date\n3.Number of attempts\n4.Score selection\n5.Question numbers\n6.Correct answer points\n7.Incorrect answer points\n8.Assign questions\n9.back");
+        int choice = Util.inputInt("Choose what to update:\n1.Start date\n2.End date\n3.Number of attempts\n4.Score selection\n5.Question numbers\n6.Correct answer points\n7.Incorrect answer points\n8.Assign questions\n9.Show Question\n10.back");
         switch(choice)
         {
             case 1:
@@ -156,10 +156,22 @@ class Homework{
                     continue;
                 return false;
             case 9:
+                while(showQuestion())
+                    continue;
+                return false;
+            case 10:
                 return false;
             default:
                 return true;
         }
+    }
+    boolean delete()
+    {
+        if(DBcontrol.update("delete from homework where hwid="+this.hwid+" and token='"+this.token+"'"))
+            System.out.println("Delete homework successfully");
+        else
+            System.out.println("Delete error");
+        return false;
     }
 
     boolean doHomework()
@@ -281,6 +293,34 @@ class Homework{
         return true;
     }
 
+    //show the question in a homework
+    boolean showQuestion()
+    {
+        getQlist();
+        System.out.println("Please select a question to see its answers");
+        for(int i=0;i<qlist.size();i++)
+        {
+            System.out.println((i+1)+". "+qlist.get(i).qid+" "+qlist.get(i).content);
+        }
+        System.out.println((qlist.size()+1)+".Back");
+        int choice = Util.inputInt("");
+        if(choice == qlist.size()+1)
+            return false;
+        else if(choice < 1 || choice > qlist.size()+1)
+        {
+            System.out.println("Invalid choice");
+            return true;
+        }
+        else
+        {
+            Question q = qlist.get(choice-1);
+            q.showAnswer();
+            return false;
+        }
+        
+
+    }
+
     void getQlist()
     {
         qlist.clear();
@@ -383,6 +423,7 @@ class Homework{
             System.out.println("There is no Question");
         return false;
     }
+
     public void calculateScore(int curattnum)
     {
         float score=0, maxscore=0, lastscore=0, firstscore=0;
