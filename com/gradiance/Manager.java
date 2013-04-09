@@ -11,7 +11,7 @@ class Manager extends User{
     }
     boolean aboutCourse(Course course)
     {
-       int choice = Util.inputInt("For "+course.cid+":\n1.Add Homework\n2.Edit Homework\n3.Reports\n4.Show Student\n5.Back");
+       int choice = Util.inputInt("For "+course.cid+":\n1.Add Homework\n2.Edit Homework\n3.Show Student\n4.Back");
        switch(choice)
        {
            case 1:
@@ -22,14 +22,10 @@ class Manager extends User{
                while(editHomework(course))
                    continue;
                break;
-           case 4:
-               while(report(course))
-                   continue;
-               break;
-           case 5:
+           case 3:
                while(showStudent(course))
                    continue;
-           case 6:
+           case 4:
                return false;
            default:
                return true;
@@ -78,15 +74,20 @@ class Manager extends User{
                 {
                     System.out.println("Add a new homework successfully.");
                     ArrayList<String> temp=new ArrayList<String>();
-                    DBcontrol.query("select mid from enroll where token='"+course.token+"'");
+                    DBcontrol.query("select mid,role from enroll where token='"+course.token+"'");
                     try{
                         while(DBcontrol.rs.next())
-                            temp.add(DBcontrol.rs.getString("mid"));
+                        {
+                            String role = DBcontrol.rs.getString("role");
+                            if(role.equals("stud"))
+                                temp.add(DBcontrol.rs.getString("mid"));
+                        }
                     }catch(Throwable oops){}
                     for(int i=0;i<temp.size();i++)
                     {
                         DBcontrol.update("insert into hw_mem values('"+course.token+"',"+hwid+",'"+temp.get(i)+"',0,0)");
                     }
+                    System.out.println(temp.size()+" student updated");
                 }
                 //while(aboutHomework(hw))
                 //    continue;
@@ -120,29 +121,6 @@ class Manager extends User{
         return false;
     }
 
-    boolean report(Course course)
-    {
-        String q = Util.c.readLine("Please enter the query: ");
-        DBcontrol.query(q);
-        try{
-            DBcontrol.meta = DBcontrol.rs.getMetaData();
-            int columnnum = DBcontrol.meta.getColumnCount();
-            while(DBcontrol.rs.next())
-            {
-                for(int col =1 ;col < columnnum;col++)
-                {
-                    Object value = DBcontrol.rs.getObject(col);
-                    if(value != null)
-                        System.out.print(value.toString()+"\t|\t");
-                }
-                System.out.print("\n");
-            }
-        }catch(Throwable oops){
-            oops.printStackTrace();
-        }
-
-        return false;
-    }
 
     boolean showStudent(Course course)
     {
@@ -176,7 +154,7 @@ class Manager extends User{
         switch(choice)
         {
             case 1:
-                while(course.viewScore(1,s.mid))
+                while(course.viewScore(0,s.mid))
                     continue;
                 return true;
             case 2:

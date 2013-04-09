@@ -10,7 +10,7 @@ class Homework{
     public String token;
     public String start_date;
     public String end_date;
-    public int score;
+    public float score;
     public int seed;
     public int retrynum;
     public int attnum;
@@ -22,12 +22,13 @@ class Homework{
     public HashMap<Integer,Integer> ans=new HashMap<Integer,Integer>();
 
     Homework(){}
-    Homework(int hwid,String token, String start_date,String end_date)
+    Homework(int hwid,String token, String start_date,String end_date,int qnum)
     {
         this.hwid = hwid;
         this.token = token;
         this.start_date = start_date;
         this.end_date = end_date;
+        this.qnum = qnum;
     }
     Homework(int hwid,String mid,String token,int qnum,int retrynum,int point,int penalty,String ssmethod,int seed,int attnum)
     {
@@ -42,11 +43,12 @@ class Homework{
         this.seed = seed;
         this.attnum = attnum;
     }
-    Homework(int hwid,String token, int score)
+    Homework(int hwid,String token, float score,int attnum)
     {
         this.hwid = hwid;
         this.token = token;
         this.score = score;
+        this.attnum = attnum;
     }
 
     void setDate(String start_date, String end_date)
@@ -286,7 +288,7 @@ class Homework{
                     }catch(NullPointerException e){System.out.println(ans.size());}
                 }
             }
-            System.out.println("Your choice: "+yourchoice+"\tCorrect Answer: "+(rindex+1));
+            System.out.println("Your choice: "+(yourchoice+1)+"\tCorrect Answer: "+(rindex+1));
             if(role == 1 || end_date.before(new Date()))
                 System.out.println("Explaination: "+q.longexp+"\n");
         }
@@ -338,10 +340,13 @@ class Homework{
             }
         }catch(Throwable oops){
             oops.printStackTrace();
-            System.out.println("");
+            System.out.println("Error");
         }
 
-        //System.out.println(qlist.size());
+
+
+        System.out.println("--------debug: number of question: "+qlist.size()+"----------");
+        //System.out.println("-------- query: "+qq+"----------");
 
         for(int i=0;i<qlist.size();i++)
         {
@@ -383,6 +388,7 @@ class Homework{
             oops.printStackTrace();
         }
     }
+
     public boolean addQuetoHw()
     {
         DBcontrol.query("select count(*) from hw_ques hq where hq.hwid="+this.hwid+" and token='"+this.token+"'");
@@ -390,6 +396,7 @@ class Homework{
             if(DBcontrol.rs.next())
             {
                 int quenum = DBcontrol.rs.getInt("count(*)");
+                System.out.println("question limit: "+this.qnum+" Already has "+quenum+" questions");
                 if(this.qnum<=quenum)
                 {
                     System.out.println("Already reach question limit");
@@ -412,7 +419,7 @@ class Homework{
             else
             {
                 Question q = course.cqlist.get(choice-1);
-                Homework hw = course.hwlist.get(choice-1);
+                //Homework hw = course.hwlist.get(choice-1);
                 if(DBcontrol.update("insert into hw_ques values('"+this.token+"',"+this.hwid+","+q.qid+")"))
                     System.out.println("Assign question successfully");
                 else
@@ -453,6 +460,8 @@ class Homework{
         else if(ssmethod.equals("first"))
             score = firstscore;
         DBcontrol.update("update hw_mem set hwscore="+score+",totalatt="+curattnum+" where token='"+this.token+"' and hwid="+this.hwid+" and mid='"+this.mid+"'");
+        System.out.println("Homework score: "+score+"\n");
+
     }
 
 

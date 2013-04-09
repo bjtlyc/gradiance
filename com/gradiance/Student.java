@@ -21,13 +21,37 @@ class Student extends User{
             {
                 String cid = DBcontrol.rs.getString("cid");
                 String token = DBcontrol.rs.getString("token");
+                Date cstart = DBcontrol.rs.getDate("cstart");
                 String cname = DBcontrol.rs.getString("cname");
+                /* verification: if the course already start, deny enrollment */
+                if(cstart.before(new Date()))
+                {
+                    System.out.println("The enrollment due already past, you cannot enroll");
+                    return false;
+                }
+                /* else enroll the student in the course*/
                 Course course = new Course(cid,token,cname);
                 String u = "insert into enroll values ('"+this.mid+"','"+course_token+"','stud')";
-                DBcontrol.update(u);
-                System.out.println("Enroll successfully");
-                while(aboutCourse(course))
-                    continue;
+                if(DBcontrol.update(u))
+                {
+                    System.out.println("Enroll successfully");
+                    
+                    /*---- for every homwork in course create a hw_mem entry for the student --*/
+                    ArrayList<Integer> hwarray = new ArrayList<Integer>();
+                    DBcontrol.query("select hwid from homework where token='"+course.token+"'");
+                    while(DBcontrol.rs.next())
+                    {
+                        int hwid = DBcontrol.rs.getInt("hwid");
+                        hwarray.add(Integer.valueOf(hwid));
+                    }
+                    for(int i=0;i<hwarray.size();i++)
+                    {
+                        DBcontrol.update("insert into hw_mem values ('"+course.token+"',"+hwarray.get(i).intValue()+",'"+mid+"',0,0)");
+                    }
+                }
+                return false;
+                //while(aboutCourse(course))
+                //    continue;
             }
             else
             {

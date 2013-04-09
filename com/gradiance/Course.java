@@ -38,7 +38,8 @@ class Course {
         if(role == 1)
             s = "select * from homework where token='"+this.token.toUpperCase()+"' order by hwid";
         else if(role == 0)
-            s = "select * from report where token='"+this.token.toUpperCase()+"' and mid ='"+mid+"'"; 
+            s = "select * from hw_mem where token='"+this.token.toUpperCase()+"' and mid='"+mid+"' order by hwid";
+            //s = "select * from report where token='"+this.token.toUpperCase()+"' and mid ='"+mid+"'"; 
         try{
             DBcontrol.query(s);
             while(DBcontrol.rs.next())
@@ -47,19 +48,21 @@ class Course {
                 int hwid = DBcontrol.rs.getInt("hwid"); 
                 if(role == 1)
                 {
+                    //int retrynum = DBcontrol.rs.getInt("retryNum"); 
+                    int qnum = DBcontrol.rs.getInt("qnum");
                     Date start_date = DBcontrol.rs.getDate("hwstart");
                     Date end_date = DBcontrol.rs.getDate("hwend");
                     String hwtitle = DBcontrol.rs.getString("hwtitle");
                     System.out.println(hwnum+".HW"+hwid+" "+hwtitle);
-                    Homework hw = new Homework(hwid,this.token,Util.date_format.format(start_date),Util.date_format.format(end_date));
+                    Homework hw = new Homework(hwid,this.token,Util.date_format.format(start_date),Util.date_format.format(end_date),qnum);
                     hwlist.add(hw);
                 }
                 else if(role == 0)
                 {
-                    int attemptnum = DBcontrol.rs.getInt("attnum"); 
-                    int score = DBcontrol.rs.getInt("rscore"); 
+                    int attemptnum = DBcontrol.rs.getInt("totalatt"); 
+                    float score = DBcontrol.rs.getFloat("hwscore"); 
                     System.out.println(hwnum+".HW "+hwid+"      | "+attemptnum+"-attempt");
-                    Homework hw = new Homework(hwid,this.token,score);
+                    Homework hw = new Homework(hwid,this.token,score,attemptnum);
                     hwlist.add(hw);
                 }
             }
@@ -72,6 +75,8 @@ class Course {
         return false;
     }
 
+    // 1: show topic from topic pool, used to link course
+    // 0: show topic related to the course, used to add a question
     boolean showTopic(int cOrQ)
     {
         list.clear();
@@ -206,7 +211,7 @@ class Course {
     {
         slist.clear();
         int mnum=0;
-        DBcontrol.query("select * from enroll e,member m where e.mid=m.mid and e.token='"+this.token+"'");
+        DBcontrol.query("select * from enroll e,member m where e.mid=m.mid and e.token='"+this.token+"' and role='stud'");
         try{
             while(DBcontrol.rs.next())
             {

@@ -190,24 +190,47 @@ class Prof extends Manager{
     }
     boolean addTopic(Course course)
     {
-        if(course.showTopic(1))
+        int choice = Util.inputInt("\n1.Link existing topic\n2.Create a new topic\n3.back\n");
+        switch(choice)
         {
-            int choice = Util.inputInt("");
-            if(choice == course.list.size()+1 )
+            case 1:
+                if(course.showTopic(1))
+                {
+                    choice = Util.inputInt("");
+                    if(choice == course.list.size()+1 )
+                        return false;
+                    else if(choice > course.list.size() || choice < 1)
+                    {
+                        System.out.println("Invalid choice");
+                        return true;
+                    }
+                    else
+                    {
+                        course.linkTopic(course.list.get(choice-1));
+                    }                
+                }
+                else
+                    System.out.println("There is no topic");
                 return false;
-            else if(choice > course.list.size() || choice < 1)
-            {
-                System.out.println("Invalid choice");
+            case 2:
+                try{
+                    DBcontrol.query("select max(tid) from topic");
+                    if(DBcontrol.rs.next())
+                    {
+                        int newtid = DBcontrol.rs.getInt("max(tid)") + 1;
+                        String topicname = Util.c.readLine("please enter the topic you want to create: "); 
+                        if(DBcontrol.update("insert into topic values ("+newtid+",'"+topicname+"')"))
+                        {
+                            course.linkTopic(newtid);
+                        }
+                    }
+                }catch(Throwable oops){;}
+                return false;
+            case 3:
+                return false;
+            default: 
                 return true;
-            }
-            else
-            {
-                course.linkTopic(course.list.get(choice-1));
-            }                
         }
-        else
-            System.out.println("There is no topic");
-        return false;
     }
     boolean assignTa(Course course)
     {
@@ -233,8 +256,13 @@ class Prof extends Manager{
                             else if(ifta.equals("ta"))
                             {
                                 System.out.println("This student has been assigned a Ta");
-                                return true;
+                                return false;
                             }
+                        }
+                        else
+                        {
+                            if(DBcontrol.update("insert into enroll values ('"+taid+"','"+course.token+"','ta')"))
+                                System.out.println("Assign Ta successfully");
                         }
                     }
                     else
@@ -245,10 +273,6 @@ class Prof extends Manager{
                 }catch(Throwable oops){
                     System.out.println("Error");
                 }
-                if(DBcontrol.update("update enroll set role='ta' where mid='"+taid+"'"))
-                    System.out.println("Assign Ta successfully");
-                else
-                    System.out.println("Error");
                 return false;
             case 2:
                 return false;

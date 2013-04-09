@@ -47,12 +47,12 @@ class Util{
         }
         return sc.nextFloat();
     }
-
+    //randomize the answers for every question. remove extra answers, keep 3 wrong answer and 1 correct answer.
     static void randomlist(int seed, ArrayList<Question> qlist)
     {
         for(int i=0;i<qlist.size();i++)
         {
-            Question q = qlist.get(0);
+            Question q = qlist.get(i);
             while(q.canslist.size()>1)
                 q.canslist.remove(seed%(q.canslist.size()));
             while(q.incanslist.size()>3)
