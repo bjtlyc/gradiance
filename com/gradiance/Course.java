@@ -48,13 +48,17 @@ class Course {
                 int hwid = DBcontrol.rs.getInt("hwid"); 
                 if(role == 1)
                 {
-                    //int retrynum = DBcontrol.rs.getInt("retryNum"); 
+                    int retrynum = DBcontrol.rs.getInt("retrynum");
+                    //int attnum = DBcontrol.rs.getInt("attnum");
+                    int point = DBcontrol.rs.getInt("point");
+                    int penalty = DBcontrol.rs.getInt("penalty");
+                    String ssmethod = DBcontrol.rs.getString("ssmethod");
                     int qnum = DBcontrol.rs.getInt("qnum");
                     Date start_date = DBcontrol.rs.getDate("hwstart");
                     Date end_date = DBcontrol.rs.getDate("hwend");
                     String hwtitle = DBcontrol.rs.getString("hwtitle");
                     System.out.println(hwnum+".HW"+hwid+" "+hwtitle);
-                    Homework hw = new Homework(hwid,this.token,Util.date_format.format(start_date),Util.date_format.format(end_date),qnum);
+                    Homework hw = new Homework(hwid,this.token,Util.date_format.format(start_date),Util.date_format.format(end_date),qnum,retrynum,point,penalty,ssmethod);
                     hwlist.add(hw);
                 }
                 else if(role == 0)
@@ -121,7 +125,7 @@ class Course {
                 //String end_date = DBcontrol.rs.getString("hwend");
                 String ssmethod = DBcontrol.rs.getString("ssmethod");
                 System.out.println(hwnum+".HW "+hwid+" "+hwtitle);
-                Homework hw = new Homework(hwid,mid,this.token,qnum,retrynum,point,penalty,ssmethod,0,1);
+                Homework hw = new Homework(hwid,mid,this.token,qnum,retrynum,point,penalty,ssmethod,0,1,0);
                 //hw.setDate(start_date, end_date);
                 hwlist.add(hw);
             }
@@ -148,6 +152,7 @@ class Course {
                 String hwtitle = DBcontrol.rs.getString("hwtitle");
                 int qnum = DBcontrol.rs.getInt("qnum");
                 int retrynum = DBcontrol.rs.getInt("retrynum");
+                Float score = DBcontrol.rs.getFloat("rscore");
                 int attnum = DBcontrol.rs.getInt("attnum");
                 int seed = DBcontrol.rs.getInt("seed");
                 Date start_date = DBcontrol.rs.getDate("hwstart");
@@ -159,7 +164,7 @@ class Course {
                     System.out.println(hwnum+".HW "+hwid+" "+hwtitle+"      "+attnum+"-attempt");
                 else
                     System.out.println(hwnum+".HW "+hwid+" "+hwtitle+"      "+attnum+"-attempt.Already due");
-                Homework hw = new Homework(hwid,mid,this.token,qnum,retrynum,point,penalty,ssmethod,seed,attnum);
+                Homework hw = new Homework(hwid,mid,this.token,qnum,retrynum,point,penalty,ssmethod,seed,attnum,score);
                 hw.setDate(Util.date_format.format(start_date), Util.date_format.format(end_date));
                 hwlist.add(hw);
             }

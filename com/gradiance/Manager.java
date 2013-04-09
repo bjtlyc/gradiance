@@ -11,21 +11,17 @@ class Manager extends User{
     }
     boolean aboutCourse(Course course)
     {
-       int choice = Util.inputInt("For "+course.cid+":\n1.Add Homework\n2.Edit Homework\n3.Show Student\n4.Back");
+       int choice = Util.inputInt("For "+course.cid+":\n1.Edit Homework\n2.Show Student\n3.Back");
        switch(choice)
        {
            case 1:
-               while(addHomework(course))
-                   continue;
-               break;
-           case 2:
                while(editHomework(course))
                    continue;
                break;
-           case 3:
+           case 2:
                while(showStudent(course))
                    continue;
-           case 4:
+           case 3:
                return false;
            default:
                return true;

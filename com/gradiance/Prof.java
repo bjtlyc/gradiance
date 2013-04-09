@@ -45,9 +45,11 @@ class Prof extends Manager{
            case 8:
                while(showStudent(course))
                    continue;
+               break;
            case 9:
                while(assignTa(course))
                    continue;
+               break;
            case 10:
                return false;
            default:

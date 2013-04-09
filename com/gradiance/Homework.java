@@ -16,21 +16,25 @@ class Homework{
     public int attnum;
     public String ssmethod;//first,last,max,avg
     public int qnum;
-    public int point;
-    public int penalty;
+    public float point;
+    public float penalty;
     public ArrayList<Question> qlist = new ArrayList<Question>();
     public HashMap<Integer,Integer> ans=new HashMap<Integer,Integer>();
 
     Homework(){}
-    Homework(int hwid,String token, String start_date,String end_date,int qnum)
+    Homework(int hwid,String token, String start_date,String end_date,int qnum,int retrynum,float point,float penalty,String ssmethod)
     {
         this.hwid = hwid;
         this.token = token;
         this.start_date = start_date;
         this.end_date = end_date;
         this.qnum = qnum;
+        this.retrynum = retrynum;
+        this.point = point;
+        this.penalty = penalty;
+        this.ssmethod = ssmethod;
     }
-    Homework(int hwid,String mid,String token,int qnum,int retrynum,int point,int penalty,String ssmethod,int seed,int attnum)
+    Homework(int hwid,String mid,String token,int qnum,int retrynum,float point,float penalty,String ssmethod,int seed,int attnum, float score)
     {
         this.hwid = hwid;
         this.mid = mid;
@@ -42,6 +46,7 @@ class Homework{
         this.ssmethod = ssmethod;
         this.seed = seed;
         this.attnum = attnum;
+        this.score = score;
     }
     Homework(int hwid,String token, float score,int attnum)
     {
@@ -75,28 +80,37 @@ class Homework{
         switch(choice)
         {
             case 1:
+                
                 Date start_date=null,end_date=null;
+                String start_date_str=null;
                 end_date=Util.parseDate(this.end_date);
+                System.out.println("Current start date: "+this.start_date+"\n");
                 while(start_date==null)
                 {
-                    this.start_date = Util.c.readLine("Please enter the start date(in the format of dd-MMM-yy(27-Apr-91))");
-                    start_date = Util.parseDate(this.start_date);
+                    start_date_str = Util.c.readLine("Please enter the new start date(in the format of dd-MMM-yy(27-Apr-91))");
+                    start_date = Util.parseDate(start_date_str);
                 }
                 if(start_date.after(end_date))
                 {
                     System.err.println("The start date is not valid, later than end date");
                     return true;
                 }
-                else
-                    DBcontrol.update("update homework set hwstart='"+this.start_date+"' where hwid="+this.hwid+" and token='"+this.token+"'");
+                else 
+                    if(DBcontrol.update("update homework set hwstart='"+start_date_str+"' where hwid="+this.hwid+" and token='"+this.token+"'"))
+                    {
+                        this.start_date = start_date_str;
+                        System.out.println("Update successfully\n");
+                    }
                 return false;
             case 2:
                 end_date=null;
                 start_date=Util.parseDate(this.start_date);
+                String end_date_str=null;
+                System.out.println("Current end date: "+this.end_date+"\n");
                 while(end_date==null)
                 {
-                    this.end_date = Util.c.readLine("Please enter the end date(in the format of dd-MMM-yy(27-Apr-91))");
-                    end_date = Util.parseDate(this.end_date);
+                    end_date_str = Util.c.readLine("Please enter the new end date(in the format of dd-MMM-yy(27-Apr-91))");
+                    end_date = Util.parseDate(end_date_str);
                 }
                 if(start_date.after(end_date))
                 {
@@ -104,9 +118,14 @@ class Homework{
                     return true;
                 }
                 else
-                    DBcontrol.update("update homework set hwend='"+this.end_date+"' where hwid="+this.hwid+" and token='"+this.token+"'");
+                    if(DBcontrol.update("update homework set hwend='"+end_date_str+"' where hwid="+this.hwid+" and token='"+this.token+"'"))
+                    {
+                        this.end_date = end_date_str;
+                        System.out.println("Update successfully\n");
+                    }
                 return false;
             case 3:
+                System.out.println("Current attempt limit is: "+this.retrynum+"\n");
                 int attnum = Util.inputInt("Enter the number of attempts");
                 if(attnum < 0)
                 {
@@ -114,25 +133,44 @@ class Homework{
                     return true;
                 }
                 else
-                    DBcontrol.update("update homework set retrynum="+attnum+" where hwid="+this.hwid+" and token='"+this.token+"'");
+                    if(DBcontrol.update("update homework set retrynum="+attnum+" where hwid="+this.hwid+" and token='"+this.token+"'"))
+                    {
+                        this.retrynum = attnum;
+                        System.out.println("Update successfully\n");
+                    }
                 return false;
             case 4:
+                System.out.println("Current score method is: "+this.ssmethod+"\n");
                 int score_method = Util.inputInt("Enter score method\n1.first\n2.last\n3.max\n4.avg");
                 if(score_method == 1 )
+                {
                     DBcontrol.update("update homework set ssmethod='first' where hwid="+this.hwid+" and token='"+this.token+"'");
+                    this.ssmethod = "first";
+                }
                 else if (score_method == 2)
+                {
                     DBcontrol.update("update homework set ssmethod='last' where hwid="+this.hwid+" and token='"+this.token+"'");
+                    this.ssmethod = "last";
+                }
                 else if (score_method == 3)
+                {
                     DBcontrol.update("update homework set ssmethod='max' where hwid="+this.hwid+" and token='"+this.token+"'");
+                    this.ssmethod = "max";
+                }
                 else if (score_method == 4)
+                {
                     DBcontrol.update("update homework set ssmethod='avg' where hwid="+this.hwid+" and token='"+this.token+"'");
+                    this.ssmethod = "avg";
+                }
                 else
                 {
                     System.out.println("Error: invalid choice, try again");
                     return true;
                 }
+                System.out.println("Update successfully\n");
                 return false;
             case 5:
+                System.out.println("Current question number is: "+this.qnum+"\n");
                 int qnum = Util.inputInt("Enter question number");
                 if(qnum < 1) 
                 {
@@ -140,18 +178,32 @@ class Homework{
                     return true;
                 }
                 else
-                    DBcontrol.update("update homework set qnum="+qnum+" where hwid="+this.hwid+" and token='"+this.token+"'");
+                    if(DBcontrol.update("update homework set qnum="+qnum+" where hwid="+this.hwid+" and token='"+this.token+"'"))
+                    {
+                        this.qnum = qnum;
+                        System.out.println("Update successfully\n");
+                    }
                 return false;
             case 6:
+                System.out.println("Current correct answer point is: "+this.point+"\n");
                 float corretpoint = Util.inputFloat("Enter correct answer points");
                 if(corretpoint < 0) 
                     System.out.println("Warning: corret answer earns negative points");
                 else
-                    DBcontrol.update("update homework set point="+corretpoint+" where hwid="+this.hwid+" and token='"+this.token+"'");
+                    if(DBcontrol.update("update homework set point="+corretpoint+" where hwid="+this.hwid+" and token='"+this.token+"'"))
+                    {
+                        this.point = corretpoint ;
+                        System.out.println("Update successfully\n");
+                    }
                 return false;
             case 7:
+                System.out.println("Current incorrect answer point is: "+this.penalty+"\n");
                 float penalty = Util.inputFloat("Enter incorrect answer points");
-                DBcontrol.update("update homework set penalty="+penalty+" where hwid="+this.hwid+" and token='"+this.token+"'");
+                if(DBcontrol.update("update homework set penalty="+penalty+" where hwid="+this.hwid+" and token='"+this.token+"'"))
+                {
+                    this.penalty = penalty;
+                    System.out.println("Update successfully\n");
+                }
                 return false;
             case 8:
                 while(addQuetoHw())
@@ -167,6 +219,7 @@ class Homework{
                 return true;
         }
     }
+
     boolean delete()
     {
         if(DBcontrol.update("delete from homework where hwid="+this.hwid+" and token='"+this.token+"'"))
@@ -201,16 +254,16 @@ class Homework{
 
         getQlist();
 
-        int seed = Util.rg.nextInt(500);
-        Util.randomlist(seed,qlist);
-        int rindex=seed % 4;
+        this.seed = Util.rg.nextInt(500);
+        Util.randomlist(this.seed,qlist);
         int [] record = new int[4];
         int truenum=0,falsenum=0,i=0;
         String currdate = Util.date_format.format(new Date()); 
-        DBcontrol.update("insert into report values ('"+this.token+"',"+this.hwid+",'"+this.mid+"',"+curattnum+","+seed+","+score+",'"+currdate+"')");
+        DBcontrol.update("insert into report values ('"+this.token+"',"+this.hwid+",'"+this.mid+"',"+curattnum+","+this.seed+","+this.score+",'"+currdate+"')");
         while(!qlist.isEmpty())
         {
-            Question q = qlist.remove(seed%(qlist.size()));
+            Question q = qlist.remove(this.seed%(qlist.size()));
+            int rindex = (this.seed + q.qid) % 4;
             System.out.println(q.content);
             int select = 0, incnum=0;
             while(select < 4)
@@ -240,11 +293,12 @@ class Homework{
             }
             DBcontrol.update("insert into stuans values ('"+this.token+"',"+this.hwid+",'"+this.mid+"',"+curattnum+","+q.qid+","+record[choice-1]+",'"+text+"')");
         }
-        int score = truenum*point + falsenum*penalty;
-        DBcontrol.update("update report set rscore="+score+" where token='"+this.token+"' and hwid="+this.hwid+" and mid='"+this.mid+"' and attnum="+curattnum);
+        this.score = truenum*point + falsenum*penalty;
+        DBcontrol.update("update report set rscore="+this.score+" where token='"+this.token+"' and hwid="+this.hwid+" and mid='"+this.mid+"' and attnum="+curattnum);
 
         //if(curattnum==this.retrynum)
         calculateScore(curattnum);
+        System.out.println("Score: "+this.score+"\n");
         return false;
 
     }
@@ -258,13 +312,14 @@ class Homework{
 
         int seed = this.seed;
         Util.randomlist(seed,qlist);
-        int rindex=seed % 4;
+        //int rindex=seed % 4;
         int [] record = new int[4];
         int truenum=0,falsenum=0,i=0;
         int yourchoice=0;
         while(!qlist.isEmpty())
         {
             Question q = qlist.remove(seed%(qlist.size()));
+            int rindex = (seed + q.qid) % 4;
             System.out.println(q.content);
             int select = 0, incnum=0;
             while(select < 4)
@@ -292,6 +347,7 @@ class Homework{
             if(role == 1 || end_date.before(new Date()))
                 System.out.println("Explaination: "+q.longexp+"\n");
         }
+        System.out.println("Score: "+this.score+"\n");
         return true;
     }
 
@@ -460,7 +516,7 @@ class Homework{
         else if(ssmethod.equals("first"))
             score = firstscore;
         DBcontrol.update("update hw_mem set hwscore="+score+",totalatt="+curattnum+" where token='"+this.token+"' and hwid="+this.hwid+" and mid='"+this.mid+"'");
-        System.out.println("Homework score: "+score+"\n");
+        //System.out.println("Homework score: "+score+"\n");
 
     }
 

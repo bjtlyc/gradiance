@@ -126,7 +126,7 @@ public static void main(String[] args) {
 				"PRIMARY KEY (token, hwid), " +
 				"FOREIGN KEY (token) REFERENCES course (token) " +
 				"ON DELETE CASCADE, " +
-				"CONSTRAINT chk_hw CHECK (hwid>0 AND qNum>0 AND retryNum>=0 AND point>0 AND penalty>=0), " +
+				"CONSTRAINT chk_hw CHECK (hwid>0 AND qNum>0 AND retryNum>=0 AND point>0), " +
 				"CONSTRAINT chk_ssMethod CHECK (ssMethod = 'first' OR ssMethod = 'last' OR ssMethod = 'max' OR ssMethod = 'avg'))");
 				
 				

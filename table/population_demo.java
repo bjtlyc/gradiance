@@ -90,6 +90,7 @@ public static void main(String[] args) {
 				stmt.executeUpdate("insert into enroll(mid, token, role) values ('aneel', 'CSC440SPR13', 'ta')");
 				stmt.executeUpdate("insert into enroll(mid, token, role) values ('sskanit', 'CSC541FLL11', 'stud')");
 				stmt.executeUpdate("insert into enroll(mid, token, role) values ('jharl', 'CSC541FLL11', 'ta')");
+				stmt.executeUpdate("insert into enroll(mid, token, role) values ('aneel', 'CSC541FLL11', 'stud')");
 
 				//stmt.executeUpdate("insert into enroll(mid, token, role) values ('agholak', 'CSC501SPR12', 'stud')");
 				
